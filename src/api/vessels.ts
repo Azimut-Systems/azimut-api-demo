@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { CollectionEnvelope, ItemEnvelope, Vessel } from '../types/api'
+import type { CollectionEnvelope, ItemEnvelope, Vessel, Transit } from '../types/api'
 
 export interface VesselsParams {
   q?: string
@@ -21,4 +21,15 @@ export async function fetchVessels(params: VesselsParams = {}): Promise<Collecti
 
 export async function fetchVessel(aid: string): Promise<ItemEnvelope<Vessel>> {
   return apiClient.request(`/v1/vessels/${aid}`)
+}
+
+export async function fetchVesselTransits(
+  aid: string,
+  params: { cursor?: string; limit?: number } = {},
+): Promise<CollectionEnvelope<Transit>> {
+  const { limit = 15, cursor } = params
+  const search = new URLSearchParams()
+  search.set('limit', String(limit))
+  if (cursor) search.set('cursor', cursor)
+  return apiClient.request(`/v1/vessels/${aid}/transits?${search.toString()}`)
 }
