@@ -45,7 +45,7 @@ export function TransitTimeline({
           No transit history for this vessel.
         </p>
       ) : (
-        <div className="overflow-x-auto pb-3 -mx-6 px-6">
+        <div className="overflow-x-auto pb-3">
           {/*
            * Layout per stop:
            *   thumbnail  h-20 (80px)
@@ -54,15 +54,22 @@ export function TransitTimeline({
            *   gap mt-3   (12px)
            *   label
            *
-           * Spine sits at top: 105px
+           * Spine sits at top: 105px, spanning dot-to-dot (50%/N inset each side).
+           * Items are flex-1 min-w-[8rem] so they fill available width and only
+           * scroll when there are many stops.
+           * Array is reversed so oldest transit is on the left (chronological order).
            */}
-          <div className="relative flex" style={{ minWidth: 'max-content' }}>
-            {/* Spine — behind all dots */}
+          <div className="relative flex w-full">
+            {/* Spine — spans exactly from first dot center to last dot center */}
             <div
-              className="absolute left-[4.5rem] right-[4.5rem] h-px bg-border"
-              style={{ top: '105px' }}
+              className="absolute h-px bg-border"
+              style={{
+                top: '105px',
+                left: `${50 / transits.length}%`,
+                right: `${50 / transits.length}%`,
+              }}
             />
-            {transits.map((t) => (
+            {[...transits].reverse().map((t) => (
               <TransitStop key={t.id} transit={t} />
             ))}
           </div>
@@ -76,7 +83,7 @@ function TransitStop({ transit: t }: { transit: Transit }) {
   return (
     <Link
       to={`/transits/${t.id}`}
-      className="group flex flex-col items-center w-36 shrink-0 px-2 select-none"
+      className="group flex flex-col items-center flex-1 min-w-[8rem] px-2 select-none"
     >
       {/* Thumbnail — h-20 */}
       <div
@@ -150,7 +157,7 @@ function TimelineSkeleton() {
   return (
     <div className="flex overflow-hidden">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex flex-col items-center w-36 shrink-0 px-2">
+        <div key={i} className="flex flex-col items-center flex-1 min-w-[8rem] px-2">
           <Skeleton className="w-28 h-20 rounded-xl mb-5" />
           <Skeleton className="w-2.5 h-2.5 rounded-full" />
           <div className="mt-3 space-y-1.5 w-full px-1">
