@@ -122,7 +122,7 @@ export function TransitTimeline({
         <div className="overflow-x-auto pb-3">
           <div
             className="relative min-h-[10rem]"
-            style={{ width: `min(100%, ${ordered.length * 10}rem)` }}
+            style={ordered.length <= 3 ? { width: `min(100%, ${ordered.length * 18}rem)` } : undefined}
           >
             {/* Spine */}
             <div
