@@ -1,0 +1,3461 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Azimut.ai API",
+    "description": "Customer-facing HTTP REST API for integrating Azimut's vessel-tracking data\ninto your platforms.\n\nThe **Pull API** documented here lets you query confirmed vessel transits\nthrough your monitored areas, drill into the underlying image sightings,\nand look up vessel identities.\n\n* **Authentication.** OAuth 2.0 client_credentials. Mint a Bearer JWT and\n  pass it as `Authorization: Bearer \u2026`.\n* **Errors.** RFC 7807 `application/problem+json` on every non-2xx response,\n  with a stable machine-readable `code`.\n* **Pagination.** Opaque cursor on every list endpoint.\n* **Environments.** Production and sandbox use identical contracts; only\n  the base URL differs.\n\nSee the [Getting Started](getting-started) guide for an end-to-end walkthrough.\n",
+    "version": "0.1.0",
+    "contact": {
+      "name": "Azimut Support",
+      "email": "support@azimut.ai"
+    }
+  },
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Liveness probe",
+        "description": "Cheap liveness check \u2014 never hits upstreams.",
+        "operationId": "health_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Service is up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health V1 Health Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/health\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/health\")\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/health\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/ready": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Readiness probe",
+        "description": "Verifies the service is ready to serve traffic.\n\nIn the walking skeleton, readiness is just 'app booted'. Follow-ups wire\nin actual upstream checks (Redis, command_center, ais_service).",
+        "operationId": "ready_v1_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Ready V1 Ready Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/ready\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/ready\")\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/ready\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/meta": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Public runtime metadata",
+        "operationId": "meta_v1_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/meta\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/meta\")\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/meta\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/oauth/token": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Mint an access token",
+        "description": "OAuth 2.0 client_credentials grant.\n\nAccepts either HTTP Basic auth (``Authorization: Basic \u2026``) or form-posted\n``client_id`` / ``client_secret``. For the walking skeleton, we only\nsupport Basic; form-mode is a follow-up.",
+        "operationId": "mint_token_v1_oauth_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_mint_token_v1_oauth_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Access token issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unsupported grant type or scope outside client's allow-list."
+          },
+          "401": {
+            "description": "Client authentication failed."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X POST \"http://localhost:8080/v1/oauth/token\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ ... }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.post(\"http://localhost:8080/v1/oauth/token\", headers={\"Content-Type\": \"application/json\"}, json={...})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/oauth/token\", {\n  method: \"POST\",\n  headers: {\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({ /* ... */ })\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Return the authenticated principal",
+        "operationId": "me_v1_me_get",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/me\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/me\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/me\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/org": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Return the org this principal belongs to",
+        "operationId": "org_v1_org_get",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/org\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/org\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/org\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/vessels": {
+      "get": {
+        "tags": [
+          "Vessels"
+        ],
+        "summary": "Search known vessels",
+        "operationId": "list_vessels_v1_vessels_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Free-text search across name/IMO/MMSI/callsign.",
+              "title": "Q"
+            },
+            "description": "Free-text search across name/IMO/MMSI/callsign."
+          },
+          {
+            "name": "imo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact IMO lookup.",
+              "title": "Imo"
+            },
+            "description": "Exact IMO lookup."
+          },
+          {
+            "name": "mmsi",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact MMSI lookup.",
+              "title": "Mmsi"
+            },
+            "description": "Exact MMSI lookup."
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-3166 alpha-2 country filter.",
+              "title": "Flag"
+            },
+            "description": "ISO-3166 alpha-2 country filter."
+          },
+          {
+            "name": "super_class",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Super Class"
+            }
+          },
+          {
+            "name": "sub_class",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sub Class"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cursor from a previous response.",
+              "title": "Cursor"
+            },
+            "description": "Cursor from a previous response."
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Vessel_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/vessels\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/vessels/{aid_param}": {
+      "get": {
+        "tags": [
+          "Vessels"
+        ],
+        "summary": "Fetch one vessel by AID",
+        "operationId": "get_vessel_v1_vessels__aid_param__get",
+        "parameters": [
+          {
+            "name": "aid_param",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Aid Param"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemEnvelope_Vessel_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/vessels/{aid_param}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels/{aid_param}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels/{aid_param}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/vessels/{aid_param}/transits": {
+      "get": {
+        "tags": [
+          "Vessels"
+        ],
+        "summary": "All transits for a vessel",
+        "operationId": "list_vessel_transits_v1_vessels__aid_param__transits_get",
+        "parameters": [
+          {
+            "name": "aid_param",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Aid Param"
+            }
+          },
+          {
+            "name": "entered_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entered After"
+            }
+          },
+          {
+            "name": "entered_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entered Before"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(open|closed)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "has_anomaly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Anomaly"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Transit_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/vessels/{aid_param}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels/{aid_param}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels/{aid_param}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/transits": {
+      "get": {
+        "tags": [
+          "Transits"
+        ],
+        "summary": "List & filter transits",
+        "operationId": "list_transits_v1_transits_get",
+        "parameters": [
+          {
+            "name": "area_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Public area ID (`ar_<n>`).",
+              "title": "Area Id"
+            },
+            "description": "Public area ID (`ar_<n>`)."
+          },
+          {
+            "name": "vessel_aid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by vessel AID.",
+              "title": "Vessel Aid"
+            },
+            "description": "Filter by vessel AID."
+          },
+          {
+            "name": "imo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Imo"
+            }
+          },
+          {
+            "name": "mmsi",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mmsi"
+            }
+          },
+          {
+            "name": "super_class",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Super Class"
+            }
+          },
+          {
+            "name": "sub_class",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sub Class"
+            }
+          },
+          {
+            "name": "flag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-3166 alpha-2.",
+              "title": "Flag"
+            },
+            "description": "ISO-3166 alpha-2."
+          },
+          {
+            "name": "entered_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-8601 UTC.",
+              "title": "Entered After"
+            },
+            "description": "ISO-8601 UTC."
+          },
+          {
+            "name": "entered_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-8601 UTC.",
+              "title": "Entered Before"
+            },
+            "description": "ISO-8601 UTC."
+          },
+          {
+            "name": "exited_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-8601 UTC.",
+              "title": "Exited After"
+            },
+            "description": "ISO-8601 UTC."
+          },
+          {
+            "name": "exited_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-8601 UTC.",
+              "title": "Exited Before"
+            },
+            "description": "ISO-8601 UTC."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Direction"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(open|closed)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "has_anomaly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Anomaly"
+            }
+          },
+          {
+            "name": "anomaly_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Anomaly Type"
+            }
+          },
+          {
+            "name": "min_confidence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 1.0,
+                  "minimum": 0.0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Confidence"
+            }
+          },
+          {
+            "name": "ais_matched",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ais Matched"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Transit_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/transits/{transit_id}": {
+      "get": {
+        "tags": [
+          "Transits"
+        ],
+        "summary": "Fetch one transit",
+        "operationId": "get_transit_v1_transits__transit_id__get",
+        "parameters": [
+          {
+            "name": "transit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Transit Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemEnvelope_Transit_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/transits/{transit_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits/{transit_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/transits/{transit_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/transits/{transit_id}/sightings": {
+      "get": {
+        "tags": [
+          "Transits"
+        ],
+        "summary": "Underlying sightings for a transit",
+        "operationId": "get_transit_sightings_v1_transits__transit_id__sightings_get",
+        "parameters": [
+          {
+            "name": "transit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Transit Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Sighting_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/transits/{transit_id}/sightings\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits/{transit_id}/sightings\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/transits/{transit_id}/sightings\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/areas": {
+      "get": {
+        "tags": [
+          "Areas"
+        ],
+        "summary": "List monitored areas",
+        "operationId": "list_areas_v1_areas_get",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter to one area type.",
+              "title": "Type"
+            },
+            "description": "Filter to one area type."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO-3166 alpha-2.",
+              "title": "Country"
+            },
+            "description": "ISO-3166 alpha-2."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Area_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/areas\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/areas\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/areas/{area_id}": {
+      "get": {
+        "tags": [
+          "Areas"
+        ],
+        "summary": "Fetch one area",
+        "operationId": "get_area_v1_areas__area_id__get",
+        "parameters": [
+          {
+            "name": "area_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Area Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemEnvelope_Area_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/areas/{area_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas/{area_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/areas/{area_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/areas/{area_id}/transits": {
+      "get": {
+        "tags": [
+          "Areas"
+        ],
+        "summary": "Transits for one area",
+        "operationId": "list_area_transits_v1_areas__area_id__transits_get",
+        "parameters": [
+          {
+            "name": "area_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Area Id"
+            }
+          },
+          {
+            "name": "entered_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entered After"
+            }
+          },
+          {
+            "name": "entered_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entered Before"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(open|closed)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "has_anomaly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Anomaly"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope_Transit_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/areas/{area_id}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas/{area_id}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/areas/{area_id}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AidScope": {
+        "type": "string",
+        "enum": [
+          "global",
+          "local"
+        ],
+        "title": "AidScope",
+        "description": "Whether the AID is resolved against the global registry or local-only."
+      },
+      "AisMatch": {
+        "properties": {
+          "matched": {
+            "type": "boolean",
+            "title": "Matched"
+          },
+          "mmsi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mmsi"
+          },
+          "imo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imo"
+          },
+          "delta_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Seconds",
+            "description": "Time gap between AIS broadcast and visual sighting, in seconds."
+          },
+          "distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance M",
+            "description": "Distance between AIS-reported position and visual fix, in metres."
+          },
+          "anomaly": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Anomaly"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "matched"
+        ],
+        "title": "AisMatch",
+        "description": "AIS-vs-visual identity reconciliation block.\n\n`matched=true` with no anomalies means a clean confirmation; `matched=false`\nmeans the vessel was AIS-dark (no broadcast) during the transit;\n`matched=true` with anomalies populated means AIS and visual disagree."
+      },
+      "Anomaly": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Anomaly type. v1: `ais_dark`, `identity_mismatch`, `name_repaint`, `flag_swap`, `loitering`, `off_schedule`, `unexpected_call`."
+          },
+          "detected_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detected At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "Anomaly",
+        "description": "A single anomaly attached to a transit."
+      },
+      "Area": {
+        "properties": {
+          "area_id": {
+            "type": "string",
+            "title": "Area Id",
+            "description": "Public area ID, prefixed `ar_`."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AreaType",
+            "default": "site"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "description": "ISO-3166 alpha-2 country code."
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone",
+            "description": "IANA timezone name (e.g. `Europe/Istanbul`)."
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "area_id",
+          "name"
+        ],
+        "title": "Area",
+        "description": "A monitored geographic area.",
+        "example": {
+          "area_id": "ar_42",
+          "country": "DE",
+          "lat": 53.7129,
+          "lon": 9.3845,
+          "name": "Elbe \u2014 Grauerort",
+          "timezone": "Europe/Berlin",
+          "type": "chokepoint"
+        }
+      },
+      "AreaRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Public area ID, prefixed `ar_`."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "One of: `chokepoint`, `port`, `anchorage`, `berth`, `site`."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type"
+        ],
+        "title": "AreaRef",
+        "description": "Inline area reference embedded on a Transit."
+      },
+      "AreaType": {
+        "type": "string",
+        "enum": [
+          "chokepoint",
+          "port",
+          "anchorage",
+          "berth",
+          "site"
+        ],
+        "title": "AreaType",
+        "description": "The kind of monitored location.\n\nMaps to the `sites.type` column in the local vessel DB. New entries are\nbackwards-compatible additions; renames are breaking and require `/v2`."
+      },
+      "Body_mint_token_v1_oauth_token_post": {
+        "properties": {
+          "grant_type": {
+            "type": "string",
+            "title": "Grant Type",
+            "description": "Must be `client_credentials`."
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope",
+            "description": "Space-separated scopes."
+          }
+        },
+        "type": "object",
+        "required": [
+          "grant_type"
+        ],
+        "title": "Body_mint_token_v1_oauth_token_post"
+      },
+      "CollectionEnvelope_Area_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of items."
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "CollectionEnvelope[Area]"
+      },
+      "CollectionEnvelope_Contact_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of items."
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "CollectionEnvelope[Contact]"
+      },
+      "CollectionEnvelope_Sighting_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Sighting"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of items."
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "CollectionEnvelope[Sighting]"
+      },
+      "CollectionEnvelope_Transit_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Transit"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of items."
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "CollectionEnvelope[Transit]"
+      },
+      "CollectionEnvelope_Vessel_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Vessel"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Page of items."
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "CollectionEnvelope[Vessel]"
+      },
+      "Contact": {
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "title": "Contact Id",
+            "description": "Stable for the lifetime of this contact. Prefixed `ct_`."
+          },
+          "vessel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vessel Id",
+            "description": "Linked vessel's ID, or null if unrecognized."
+          },
+          "link_status": {
+            "$ref": "#/components/schemas/LinkStatus",
+            "description": "Whether the contact is linked to a vessel."
+          },
+          "link_score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Score",
+            "description": "Recognition confidence when linked."
+          },
+          "camera_id": {
+            "type": "string",
+            "title": "Camera Id",
+            "description": "Camera currently observing this contact."
+          },
+          "camera_location": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Location",
+            "description": "Observing camera's geo position as `[lon, lat]` (WGS84) when known. Repeats across every contact from the same camera; map clients should treat the camera as the authority for camera placement."
+          },
+          "platform_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Name",
+            "description": "Internal platform / deployment name of the observing camera (e.g. `azimut-haifa`). Surfaces the unhashed identifier so the operator UI can address legacy /video endpoints. Customers should key off `camera_id` instead."
+          },
+          "vessel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VesselRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Embedded vessel summary when `expand=vessel` is requested."
+          },
+          "classification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification",
+            "description": "Best-guess class: `Cargo`, `Tanker`, `Fishing`, \u2026"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TrackerState",
+            "description": "Tracker state."
+          },
+          "position": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatLon"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Current WGS84 position."
+          },
+          "sog": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sog",
+            "description": "Speed over ground, in knots."
+          },
+          "cog": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cog",
+            "description": "Course over ground, degrees true."
+          },
+          "heading": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading",
+            "description": "Hull heading if derivable."
+          },
+          "length_estimate_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Estimate M",
+            "description": "Length estimated from imagery, in metres."
+          },
+          "distance_from_camera_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance From Camera M",
+            "description": "Distance from the observing camera, in metres."
+          },
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/ContactAlertSummary"
+            },
+            "type": "array",
+            "title": "Alerts"
+          },
+          "tracklets": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tracklets",
+            "description": "Raw tracklet records when `include_tracklets=true`."
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At",
+            "description": "When this contact was first tracked."
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At",
+            "description": "Most recent observation."
+          },
+          "linked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked At",
+            "description": "When the vessel link was established."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last time any field changed."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contact_id",
+          "link_status",
+          "camera_id",
+          "state",
+          "first_seen_at",
+          "last_seen_at",
+          "updated_at"
+        ],
+        "title": "Contact",
+        "description": "A live contact on the map."
+      },
+      "ContactAlertSummary": {
+        "properties": {
+          "alert_id": {
+            "type": "string",
+            "title": "Alert Id"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "raised_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Raised At"
+          },
+          "acknowledged": {
+            "type": "boolean",
+            "title": "Acknowledged"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "alert_id",
+          "severity",
+          "category",
+          "message",
+          "raised_at",
+          "acknowledged"
+        ],
+        "title": "ContactAlertSummary",
+        "description": "Compact alert summary embedded on contacts and vessels."
+      },
+      "Dimensions": {
+        "properties": {
+          "length_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length M"
+          },
+          "beam_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beam M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Dimensions",
+        "description": "Vessel size estimate. Either field may be null when not known."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ItemEnvelope_Area_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Area"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ItemEnvelope[Area]"
+      },
+      "ItemEnvelope_Contact_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ItemEnvelope[Contact]"
+      },
+      "ItemEnvelope_Transit_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Transit"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ItemEnvelope[Transit]"
+      },
+      "ItemEnvelope_Vessel_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Vessel"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ItemEnvelope[Vessel]"
+      },
+      "LatLon": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat",
+            "description": "Latitude in decimal degrees."
+          },
+          "lon": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lon",
+            "description": "Longitude in decimal degrees."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "title": "LatLon",
+        "description": "WGS84 coordinate pair.\n\nObject form (``{\"lat\": ..., \"lon\": ...}``) is deliberate \u2014 the ordering\nambiguity between ``[lat, lon]`` (maritime) and ``[lon, lat]`` (GeoJSON)\nhas caused enough integration bugs elsewhere to justify the extra bytes."
+      },
+      "LinkStatus": {
+        "type": "string",
+        "enum": [
+          "unlinked",
+          "pending",
+          "linked"
+        ],
+        "title": "LinkStatus",
+        "description": "Whether a contact has been linked to a known vessel."
+      },
+      "MapMeta": {
+        "properties": {
+          "mapbox_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapbox Token",
+            "description": "Public token, if configured."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "MapMeta"
+      },
+      "MeResponse": {
+        "properties": {
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id",
+            "description": "Present for user tokens."
+          },
+          "integration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integration Id",
+            "description": "Present for integration tokens."
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "User's email (user tokens only)."
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "plan": {
+            "type": "string",
+            "title": "Plan"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "org_id",
+          "scopes",
+          "plan"
+        ],
+        "title": "MeResponse",
+        "description": "Echo of the authenticated principal."
+      },
+      "Meta": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "description": "Echoes the gateway-assigned X-Request-ID."
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "UTC timestamp the response was built."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "generated_at"
+        ],
+        "title": "Meta",
+        "description": "Per-response metadata."
+      },
+      "MetaResponse": {
+        "properties": {
+          "deployment_id": {
+            "type": "string",
+            "title": "Deployment Id",
+            "description": "Deployment identifier."
+          },
+          "pipeline_version": {
+            "type": "string",
+            "title": "Pipeline Version",
+            "description": "Detection pipeline version deployed."
+          },
+          "service_version": {
+            "type": "string",
+            "title": "Service Version",
+            "description": "Application version \u2014 sourced from `helm --app-version` (Chart.AppVersion). Surfaced in the SPA header so operators can see which release is running."
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Time",
+            "description": "Server wall clock, UTC."
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id",
+            "description": "Calling org's ID."
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features",
+            "description": "Feature flags for this org."
+          },
+          "dev_mode": {
+            "type": "boolean",
+            "title": "Dev Mode",
+            "description": "Whether the gateway is running in local/dev mode.",
+            "default": false
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Namespace",
+            "description": "K8s namespace this gateway runs in."
+          },
+          "map": {
+            "$ref": "#/components/schemas/MapMeta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "deployment_id",
+          "pipeline_version",
+          "service_version",
+          "server_time",
+          "org_id"
+        ],
+        "title": "MetaResponse",
+        "description": "Public runtime metadata. Safe to call on page load; cacheable via ETag."
+      },
+      "OrgResponse": {
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "title": "Org Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "plan": {
+            "type": "string",
+            "title": "Plan"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "org_id",
+          "display_name",
+          "plan"
+        ],
+        "title": "OrgResponse",
+        "description": "Org record for the active principal."
+      },
+      "PageInfo": {
+        "properties": {
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor",
+            "description": "Opaque cursor for the next page. `null` when no more pages."
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "True when another page is available via `cursor`.",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PageInfo",
+        "description": "Pagination cursor for a collection response."
+      },
+      "Sighting": {
+        "properties": {
+          "sighting_id": {
+            "type": "string",
+            "title": "Sighting Id",
+            "description": "Public sighting ID, prefixed `sgt_`."
+          },
+          "transit_id": {
+            "type": "string",
+            "title": "Transit Id",
+            "description": "Parent transit, prefixed `tr_`."
+          },
+          "aid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aid"
+          },
+          "imo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imo"
+          },
+          "camera_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Id",
+            "description": "Public camera id (`cam_<base32>`) of the observing camera."
+          },
+          "sighted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sighted At"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "URL to the sighting's primary crop."
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sighting_id",
+          "transit_id",
+          "sighted_at"
+        ],
+        "title": "Sighting",
+        "description": "A single visual observation that contributed to a transit.",
+        "example": {
+          "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "camera_id": "cam_KZ4PFM7N8YT9ZAB0",
+          "confidence": 0.94,
+          "image_url": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg",
+          "imo": "9301234",
+          "sighted_at": "2026-05-18T08:14:22Z",
+          "sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "transit_id": "tr_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "verified": true
+        }
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "description": "Lifetime of the token in seconds."
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "description": "Space-separated granted scopes."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_in",
+          "scope"
+        ],
+        "title": "TokenResponse",
+        "description": "OAuth 2.0 client_credentials token response (RFC 6749 \u00a75.1).",
+        "example": {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "expires_in": 3600,
+          "scope": "areas:read meta:read transits:read vessels:read",
+          "token_type": "Bearer"
+        }
+      },
+      "TrackerState": {
+        "type": "string",
+        "enum": [
+          "active",
+          "lost",
+          "handoff"
+        ],
+        "title": "TrackerState",
+        "description": "Tracker lifecycle state for a contact."
+      },
+      "Transit": {
+        "properties": {
+          "transit_id": {
+            "type": "string",
+            "title": "Transit Id",
+            "description": "Stable, opaque ID. Prefixed `tr_`."
+          },
+          "area": {
+            "$ref": "#/components/schemas/AreaRef"
+          },
+          "vessel": {
+            "$ref": "#/components/schemas/Vessel"
+          },
+          "entered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Entered At",
+            "description": "First confirmed visual sighting inside the area."
+          },
+          "exited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exited At",
+            "description": "Last confirmed sighting. Null while the transit is still open."
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransitDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/TransitStatus"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Identity + trajectory confidence."
+          },
+          "ais_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AisMatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/TransitEvidence"
+          },
+          "anomalies": {
+            "items": {
+              "$ref": "#/components/schemas/Anomaly"
+            },
+            "type": "array",
+            "title": "Anomalies"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "transit_id",
+          "area",
+          "vessel",
+          "entered_at",
+          "status",
+          "confidence",
+          "evidence",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Transit",
+        "description": "A monitored passage of one vessel through one area.",
+        "example": {
+          "ais_match": {
+            "anomaly": [],
+            "delta_seconds": 4,
+            "distance_m": 18.2,
+            "imo": "9301234",
+            "matched": true,
+            "mmsi": "211281000"
+          },
+          "anomalies": [],
+          "area": {
+            "id": "ar_42",
+            "name": "Elbe \u2014 Grauerort",
+            "type": "chokepoint"
+          },
+          "confidence": 0.97,
+          "created_at": "2026-05-18T08:14:25Z",
+          "direction": "westbound",
+          "entered_at": "2026-05-18T08:14:22Z",
+          "evidence": {
+            "first_sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDE0",
+            "gallery_url": "https://images.azimut.ai/i/hR4sQe0LkW8nYv1Pc2aBdG.jpg",
+            "last_sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDEZ",
+            "primary_image_url": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg",
+            "sighting_count": 23
+          },
+          "exited_at": "2026-05-18T08:31:07Z",
+          "status": "closed",
+          "transit_id": "tr_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "updated_at": "2026-05-18T08:31:09Z",
+          "vessel": {
+            "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+            "aid_scope": "global",
+            "callsign": "DHHE",
+            "dimensions": {
+              "beam_m": 48.2,
+              "length_m": 366.0
+            },
+            "flag": "DE",
+            "imo": "9301234",
+            "mmsi": "211281000",
+            "name": "MS HAMBURG EXPRESS",
+            "previous_aids": [],
+            "sub_class": "containers",
+            "super_class": "merchant"
+          }
+        }
+      },
+      "TransitDirection": {
+        "type": "string",
+        "enum": [
+          "inbound",
+          "outbound",
+          "northbound",
+          "southbound",
+          "eastbound",
+          "westbound"
+        ],
+        "title": "TransitDirection",
+        "description": "Direction of travel through the area."
+      },
+      "TransitEvidence": {
+        "properties": {
+          "sighting_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Sighting Count"
+          },
+          "primary_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Image Url"
+          },
+          "gallery_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gallery Url"
+          },
+          "first_sighting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Sighting Id"
+          },
+          "last_sighting_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sighting Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sighting_count"
+        ],
+        "title": "TransitEvidence",
+        "description": "Evidence summary on a Transit. Counts and pointers, not raw data."
+      },
+      "TransitStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ],
+        "title": "TransitStatus",
+        "description": "Whether the transit is still active or has been closed."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Vessel": {
+        "properties": {
+          "aid": {
+            "type": "string",
+            "title": "Aid",
+            "description": "Azimut Identifier \u2014 stable across the vessel's life."
+          },
+          "aid_scope": {
+            "$ref": "#/components/schemas/AidScope",
+            "description": "`global` if resolved against the central AID registry, else `local`.",
+            "default": "global"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Visually-read name when available."
+          },
+          "imo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imo"
+          },
+          "mmsi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mmsi"
+          },
+          "callsign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callsign"
+          },
+          "super_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Super Class",
+            "description": "Top-level category. One of: merchant, support, motor, military."
+          },
+          "sub_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sub Class",
+            "description": "Sub-classification. v1 values: containers, bulk, tanker, general_cargo, ro_ro, cruise_passenger, ferry, tug, supply_utility, yacht, fishing, pilot_patrol, military."
+          },
+          "flag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag",
+            "description": "ISO-3166 alpha-2 country code."
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Dimensions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous_aids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Previous Aids",
+            "description": "Prior AIDs this vessel was known by (e.g. local\u2192global promotion)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "aid"
+        ],
+        "title": "Vessel",
+        "description": "Public vessel record.",
+        "example": {
+          "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "aid_scope": "global",
+          "callsign": "DHHE",
+          "dimensions": {
+            "beam_m": 48.2,
+            "length_m": 366.0
+          },
+          "flag": "DE",
+          "imo": "9301234",
+          "mmsi": "211281000",
+          "name": "MS HAMBURG EXPRESS",
+          "previous_aids": [],
+          "sub_class": "containers",
+          "super_class": "merchant"
+        }
+      },
+      "VesselRef": {
+        "properties": {
+          "vessel_id": {
+            "type": "string",
+            "title": "Vessel Id",
+            "description": "Vessel identity. Prefixed `vsl_`."
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "imo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imo"
+          },
+          "mmsi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mmsi"
+          },
+          "flag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag",
+            "description": "ISO-3166 alpha-2 country code."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vessel_id"
+        ],
+        "title": "VesselRef",
+        "description": "Lightweight vessel reference embedded on contacts when linked.\n\nCallers who want the full record use ``?expand=vessel``."
+      },
+      "WsTicketResponse": {
+        "properties": {
+          "ticket": {
+            "type": "string",
+            "title": "Ticket",
+            "description": "Single-use WS ticket. Prefixed `wst_`."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "Absolute expiry. Ticket is also single-use."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ticket",
+          "expires_at"
+        ],
+        "title": "WsTicketResponse",
+        "description": "Response from ``POST /v1/ws/ticket``."
+      }
+    },
+    "securitySchemes": {
+      "OAuth2ClientCredentials": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 client_credentials grant. Mint a token at `/v1/oauth/token`.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "http://localhost:8080/v1/oauth/token",
+            "scopes": {
+              "transits:read": "List and read transits and their sightings.",
+              "vessels:read": "Read vessel identities and transit history.",
+              "areas:read": "Read monitored areas.",
+              "meta:read": "Read service metadata. Implicit on every token."
+            }
+          }
+        }
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer JWT minted via `/v1/oauth/token`."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "Health, readiness, and runtime metadata."
+    },
+    {
+      "name": "Auth",
+      "description": "OAuth 2.0 client_credentials token issuance."
+    },
+    {
+      "name": "Identity",
+      "description": "Information about the authenticated principal."
+    },
+    {
+      "name": "Transits",
+      "description": "Visually-confirmed passages of one vessel through one area. The headline Pull-API resource."
+    },
+    {
+      "name": "Vessels",
+      "description": "Long-lived vessel identities (AID, MMSI, IMO, class, flag)."
+    },
+    {
+      "name": "Areas",
+      "description": "Monitored geographic locations (chokepoints, ports, anchorages, berths) you are licensed for."
+    },
+    {
+      "name": "Contacts",
+      "description": "Live on-screen objects tracked by the sensor. _Non-Pull surface; contact your account team for access._"
+    },
+    {
+      "name": "Video",
+      "description": "Camera registry and video assets. _Non-Pull surface._"
+    },
+    {
+      "name": "Realtime",
+      "description": "WebSocket event stream. _Non-Pull surface._"
+    },
+    {
+      "name": "Session",
+      "description": "Cookie-based session login for the operator UI. _Internal._"
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "Pull API",
+      "tags": [
+        "Transits",
+        "Vessels",
+        "Areas"
+      ]
+    },
+    {
+      "name": "Identity & Auth",
+      "tags": [
+        "Auth",
+        "Identity"
+      ]
+    },
+    {
+      "name": "System",
+      "tags": [
+        "System"
+      ]
+    }
+  ]
+}
