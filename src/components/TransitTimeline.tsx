@@ -3,6 +3,7 @@ import { Skeleton } from './ui/skeleton'
 import { Button } from './ui/button'
 import { AnomalyBadge } from './AnomalyBadge'
 import { cn } from '../lib/utils'
+import { formatDatetime } from '../lib/formatDatetime'
 import type { Transit } from '../types/api'
 
 interface TransitTimelineProps {
@@ -78,7 +79,7 @@ function TransitRow({ transit: t }: { transit: Transit }) {
     <div className="flex flex-col gap-1.5">
       {/* Sighting thumbnails evenly distributed above bar */}
       {sightingCount > 0 && (
-        <div className="flex items-end justify-around px-1">
+        <div className="flex items-end gap-2 px-1">
           {Array.from({ length: visibleCount }).map((_, i) => (
             <div
               key={i}
@@ -149,11 +150,3 @@ function TransitRow({ transit: t }: { transit: Transit }) {
   )
 }
 
-function formatDatetime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}

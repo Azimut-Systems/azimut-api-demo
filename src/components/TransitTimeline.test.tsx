@@ -82,4 +82,23 @@ describe('TransitTimeline', () => {
     // 3 sightings = 3 placeholder boxes rendered (count ≤ 5)
     expect(screen.getAllByTitle('Sighting').length).toBe(3)
   })
+
+  it('shows overflow chip and caps at 5 thumbnails when count > 5', () => {
+    const overflowTransit = {
+      ...mockTransit,
+      evidence: { primary_image: null, sightings: { count: 6, ids: [] } },
+    }
+    wrap(
+      <TransitTimeline
+        transits={[overflowTransit]}
+        isLoading={false}
+        hasPrev={false}
+        hasNext={false}
+        onPrev={() => {}}
+        onNext={() => {}}
+      />,
+    )
+    expect(screen.getAllByTitle('Sighting').length).toBe(5)
+    expect(screen.getByText('+1')).toBeInTheDocument()
+  })
 })

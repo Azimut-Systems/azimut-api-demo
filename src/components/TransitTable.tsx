@@ -7,6 +7,7 @@ import { Skeleton } from './ui/skeleton'
 import { AnomalyBadge } from './AnomalyBadge'
 import { VesselChip } from './VesselChip'
 import { cn } from '../lib/utils'
+import { formatDatetime } from '../lib/formatDatetime'
 import type { Transit } from '../types/api'
 
 interface TransitTableProps {
@@ -31,6 +32,7 @@ export function TransitTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-16" />
             <TableHead>Vessel</TableHead>
             <TableHead>Area</TableHead>
             <TableHead>Entered</TableHead>
@@ -45,7 +47,7 @@ export function TransitTable({
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 9 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -54,7 +56,7 @@ export function TransitTable({
               ))
             : transits.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-16 text-center text-muted-foreground">
+                  <TableCell colSpan={9} className="py-16 text-center text-muted-foreground">
                     No transits match your filters.
                   </TableCell>
                 </TableRow>
@@ -68,15 +70,18 @@ export function TransitTable({
                   )}
                   onClick={() => navigate(`/transits/${t.id}`)}
                 >
+                  <TableCell className="p-2">
+                    <TransitThumbnail href={t.evidence.primary_image?.href ?? null} />
+                  </TableCell>
                   <TableCell>
                     <VesselChip vessel={t.vessel} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">{t.area.name}</TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
-                    {formatTime(t.entered_at)}
+                    {formatDatetime(t.entered_at)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {t.exited_at ? formatTime(t.exited_at) : '—'}
+                    {t.exited_at ? formatDatetime(t.exited_at) : '—'}
                   </TableCell>
                   <TableCell>
                     <span
@@ -123,11 +128,22 @@ export function TransitTable({
   )
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function TransitThumbnail({ href }: { href: string | null }) {
+  if (!href) {
+    return (
+      <div className="h-10 w-14 rounded bg-muted flex items-center justify-center text-muted-foreground/40">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={href}
+      alt=""
+      className="h-10 w-14 rounded object-cover bg-muted"
+      loading="lazy"
+    />
+  )
 }
