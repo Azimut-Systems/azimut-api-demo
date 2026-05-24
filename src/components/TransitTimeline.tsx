@@ -120,7 +120,10 @@ export function TransitTimeline({
          *   right = (1   × (100% − 8rem)) + 4rem from right = 4rem
          */
         <div className="overflow-x-auto pb-3">
-          <div className="relative w-full min-h-[10rem]">
+          <div
+            className="relative min-h-[10rem]"
+            style={{ width: `min(100%, ${ordered.length * 10}rem)` }}
+          >
             {/* Spine */}
             <div
               className="absolute left-[4rem] right-[4rem] h-px bg-border"
