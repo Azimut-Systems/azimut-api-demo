@@ -23,8 +23,7 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
       onChange({ ...filters, q: localQ || undefined })
     }, 300)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localQ])
+  }, [localQ, filters, onChange])
 
   function clear() {
     setLocalQ('')
@@ -46,7 +45,7 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
         maxLength={2}
         value={filters.flag ?? ''}
         onChange={(e) =>
-          onChange({ ...filters, q: localQ || undefined, flag: e.target.value.toUpperCase() || undefined })
+          onChange({ ...filters, flag: e.target.value.toUpperCase() || undefined })
         }
       />
 
