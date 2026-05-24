@@ -5,6 +5,7 @@ import { AnomalyBadge } from '../components/AnomalyBadge'
 import { Skeleton } from '../components/ui/skeleton'
 import { Separator } from '../components/ui/separator'
 import { cn } from '../lib/utils'
+import { formatDatetime } from '../lib/formatDatetime'
 import { VesselCard } from '../components/VesselCard'
 import type { Sighting } from '../types/api'
 
@@ -249,14 +250,4 @@ function SightingCard({ sighting }: { sighting: Sighting }) {
       </div>
     </div>
   )
-}
-
-function formatDatetime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
 }
