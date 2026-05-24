@@ -19,6 +19,7 @@ export async function getToken(): Promise<string> {
 
 export function clearToken(): void {
   state = null
+  inflightPromise = null
 }
 
 async function mintToken(): Promise<string> {
