@@ -3,7 +3,7 @@ import { useVessels, type VesselFiltersInput } from '../hooks/useVessels'
 import { useMe } from '../hooks/useMe'
 import { NavBar } from '../components/NavBar'
 import { VesselFilters } from '../components/VesselFilters'
-import { VesselTable } from '../components/VesselTable'
+import { VesselGrid } from '../components/VesselGrid'
 
 export function VesselList() {
   const [filters, setFilters] = useState<VesselFiltersInput>({})
@@ -18,7 +18,7 @@ export function VesselList() {
       <NavBar orgId={me?.org_id} />
       <VesselFilters filters={filters} onChange={setFilters} />
       <main className="flex-1 overflow-auto">
-        <VesselTable
+        <VesselGrid
           vessels={vessels}
           isLoading={isLoading}
           isFetchingNextPage={isFetchingNextPage}
