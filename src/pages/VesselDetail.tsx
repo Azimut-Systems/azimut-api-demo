@@ -88,7 +88,7 @@ export function VesselDetail() {
           <TransitTimeline
             transits={transits}
             isLoading={transitsLoading}
-            hasPrev={pageIndex > 0}
+            hasPrev={pageIndex > 0 && !transitsLoading}
             hasNext={hasMoreNext}
             onPrev={goPrev}
             onNext={goNext}
