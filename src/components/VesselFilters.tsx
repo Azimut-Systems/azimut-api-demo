@@ -49,6 +49,24 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
         }
       />
 
+      <Input
+        className="h-8 w-32"
+        placeholder="Category…"
+        value={filters.category ?? ''}
+        onChange={(e) =>
+          onChange({ ...filters, category: e.target.value || undefined })
+        }
+      />
+
+      <Input
+        className="h-8 w-32"
+        placeholder="Subtype…"
+        value={filters.subtype ?? ''}
+        onChange={(e) =>
+          onChange({ ...filters, subtype: e.target.value || undefined })
+        }
+      />
+
       <Button variant="ghost" size="sm" onClick={clear} className="ml-auto">
         Clear filters
       </Button>

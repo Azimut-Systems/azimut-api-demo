@@ -6,6 +6,8 @@ export interface VesselsParams {
   imo?: string
   mmsi?: string
   flag?: string
+  category?: string
+  subtype?: string
   cursor?: string
   limit?: number
 }
