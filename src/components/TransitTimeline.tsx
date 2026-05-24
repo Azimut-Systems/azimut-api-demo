@@ -14,6 +14,57 @@ interface TransitTimelineProps {
   onNext: () => void
 }
 
+/**
+ * Given an already-sorted (oldest-first) array of transits, returns a
+ * position for each in [0, 1] where:
+ *   - First  → 0   (left edge)
+ *   - Last   → 1   (right edge)
+ *   - Others → proportional to elapsed time between first and last
+ *
+ * A two-pass spread ensures adjacent stops are never closer than MIN_GAP:
+ *   forward  pass pushes clustered stops to the right,
+ *   backward pass pulls them back if they've overshot past the last stop,
+ * while keeping the first pinned at 0 and the last pinned at 1.
+ */
+function computeTimePositions(transits: Transit[]): number[] {
+  const n = transits.length
+  if (n === 0) return []
+  if (n === 1) return [0]
+
+  const times = transits.map((t) => new Date(t.entered_at).getTime())
+  const minT = times[0]
+  const maxT = times[n - 1]
+  const span = maxT - minT
+
+  // Raw proportional positions (first=0, last=1). Use even spacing when all
+  // transits share the same timestamp.
+  const positions: number[] =
+    span === 0
+      ? times.map((_, i) => i / (n - 1))
+      : times.map((t) => (t - minT) / span)
+
+  // Minimum gap between adjacent stop centres, as a fraction of [0, 1].
+  // 0.1 ≈ one card-width apart at ~800 px container width.
+  const MIN_GAP = 0.1
+
+  // Forward pass (indices 1 → n-2): push items right if too close to predecessor.
+  for (let i = 1; i < n - 1; i++) {
+    if (positions[i] - positions[i - 1] < MIN_GAP) {
+      positions[i] = positions[i - 1] + MIN_GAP
+    }
+  }
+
+  // Backward pass (indices n-2 → 1): pull items left if they've drifted past
+  // their successor. Leaves positions[0]=0 and positions[n-1]=1 untouched.
+  for (let i = n - 2; i >= 1; i--) {
+    if (positions[i + 1] - positions[i] < MIN_GAP) {
+      positions[i] = Math.max(0, positions[i + 1] - MIN_GAP)
+    }
+  }
+
+  return positions
+}
+
 export function TransitTimeline({
   transits,
   isLoading,
@@ -22,6 +73,10 @@ export function TransitTimeline({
   onPrev,
   onNext,
 }: TransitTimelineProps) {
+  // Oldest first so positions map left → right chronologically.
+  const ordered = [...transits].reverse()
+  const positions = computeTimePositions(ordered)
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -40,37 +95,46 @@ export function TransitTimeline({
 
       {isLoading ? (
         <TimelineSkeleton />
-      ) : transits.length === 0 ? (
+      ) : ordered.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
           No transit history for this vessel.
         </p>
       ) : (
+        /*
+         * Each stop is absolutely positioned at:
+         *   left = pos × (100% − 8rem)
+         *
+         * This maps pos=0 → left edge and pos=1 → right edge (accounting for
+         * the 8rem card width so the last card doesn't overflow).
+         *
+         * Stop heights:
+         *   thumbnail h-20  80px
+         *   mb-5            20px
+         *   dot h-2.5       10px  → dot centre at 80+20+5 = 105px
+         *   mt-3            12px
+         *   label           ~32px
+         *   total           ~149px  → container min-h-[10rem] (160px)
+         *
+         * Spine runs from centre of first dot to centre of last dot:
+         *   left  = (0   × (100% − 8rem)) + 4rem = 4rem
+         *   right = (1   × (100% − 8rem)) + 4rem from right = 4rem
+         */
         <div className="overflow-x-auto pb-3">
-          {/*
-           * Layout per stop:
-           *   thumbnail  h-20 (80px)
-           *   gap mb-5   (20px)
-           *   dot        h-2.5 (10px) → center at 80+20+5 = 105px from top
-           *   gap mt-3   (12px)
-           *   label
-           *
-           * Spine sits at top: 105px, spanning dot-to-dot (50%/N inset each side).
-           * Items are flex-1 min-w-[8rem] so they fill available width and only
-           * scroll when there are many stops.
-           * Array is reversed so oldest transit is on the left (chronological order).
-           */}
-          <div className="relative flex w-full">
-            {/* Spine — spans exactly from first dot center to last dot center */}
+          <div className="relative w-full min-h-[10rem]">
+            {/* Spine */}
             <div
-              className="absolute h-px bg-border"
-              style={{
-                top: '105px',
-                left: `${50 / transits.length}%`,
-                right: `${50 / transits.length}%`,
-              }}
+              className="absolute left-[4rem] right-[4rem] h-px bg-border"
+              style={{ top: '105px' }}
             />
-            {[...transits].reverse().map((t) => (
-              <TransitStop key={t.id} transit={t} />
+
+            {ordered.map((t, i) => (
+              <div
+                key={t.id}
+                className="absolute w-32"
+                style={{ left: `calc(${positions[i]} * (100% - 8rem))` }}
+              >
+                <TransitStop transit={t} />
+              </div>
             ))}
           </div>
         </div>
@@ -83,7 +147,7 @@ function TransitStop({ transit: t }: { transit: Transit }) {
   return (
     <Link
       to={`/transits/${t.id}`}
-      className="group flex flex-col items-center flex-1 min-w-[8rem] px-2 select-none"
+      className="group flex flex-col items-center w-full select-none"
     >
       {/* Thumbnail — h-20 */}
       <div
@@ -123,7 +187,6 @@ function TransitStop({ transit: t }: { transit: Transit }) {
             </svg>
           </div>
         )}
-        {/* Open indicator */}
         {t.status === 'open' && (
           <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -132,7 +195,7 @@ function TransitStop({ transit: t }: { transit: Transit }) {
         )}
       </div>
 
-      {/* Dot — sits on the spine */}
+      {/* Dot */}
       <div
         className={cn(
           'relative z-10 w-2.5 h-2.5 rounded-full border-2 border-background shadow transition-colors duration-150',
