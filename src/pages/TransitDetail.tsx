@@ -32,7 +32,18 @@ export function TransitDetail() {
           ← Feed
         </Link>
         <h1 className="text-lg font-semibold tracking-tight">
-          {transitLoading ? <Skeleton className="h-5 w-48" /> : (transit?.vessel.name ?? id)}
+          {transitLoading ? (
+            <Skeleton className="h-5 w-48" />
+          ) : transit ? (
+            <Link
+              to={`/vessels/${transit.vessel.aid}`}
+              className="hover:underline"
+            >
+              {transit.vessel.name ?? id}
+            </Link>
+          ) : (
+            id
+          )}
         </h1>
       </header>
 

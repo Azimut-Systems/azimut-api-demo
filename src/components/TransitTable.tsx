@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from './ui/table'
@@ -73,8 +73,16 @@ export function TransitTable({
                   <TableCell className="p-2">
                     <TransitThumbnail href={t.evidence.primary_image?.href ?? null} />
                   </TableCell>
-                  <TableCell>
-                    <VesselChip vessel={t.vessel} />
+                  <TableCell
+                    className="p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Link
+                      to={`/vessels/${t.vessel.aid}`}
+                      className="flex px-4 py-3 hover:underline"
+                    >
+                      <VesselChip vessel={t.vessel} />
+                    </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{t.area.name}</TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
