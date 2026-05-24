@@ -183,11 +183,11 @@ function SightingCard({ sighting }: { sighting: Sighting }) {
   return (
     <div className="rounded-lg border overflow-hidden flex flex-col text-sm">
       {sighting.images?.primary?.href ? (
-        <div className="relative h-32 bg-muted overflow-hidden">
+        <div className="relative w-full bg-black overflow-hidden">
           <img
             src={sighting.images.primary.href}
             alt={`Sighting ${sighting.id}`}
-            className="w-full h-full object-cover"
+            className="w-full h-auto"
             loading="lazy"
           />
           {vs?.image.quality && (
