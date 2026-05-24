@@ -65,6 +65,11 @@ export interface ImageRef {
   expires_at: string | null
 }
 
+export interface SightingImages {
+  primary: ImageRef | null
+  crops: ImageRef[]
+}
+
 export interface TransitSightingsEvidence {
   count: number
   ids: string[]
@@ -144,7 +149,6 @@ export interface SightingVessel {
 
 export interface SightingSource {
   camera_id: string | null
-  site_id: string | null
   area_id: string | null
 }
 
@@ -163,6 +167,7 @@ export interface Sighting {
   source: SightingSource
   identification: SightingIdentification
   position: LatLon | null
+  images: SightingImages
   visual_signals: VisualSignals | null
   created_at: string
   updated_at: string

@@ -22,3 +22,7 @@ export async function fetchTransit(id: string): Promise<ItemEnvelope<Transit>> {
 export async function fetchTransitSightings(id: string): Promise<CollectionEnvelope<Sighting>> {
   return apiClient.request(`/v1/transits/${id}/sightings`)
 }
+
+export async function fetchSighting(id: string): Promise<ItemEnvelope<Sighting>> {
+  return apiClient.request(`/v1/sightings/${id}`)
+}
