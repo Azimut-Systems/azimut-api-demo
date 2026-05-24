@@ -6,7 +6,7 @@ vi.mock('./auth', () => ({
   clearToken: vi.fn(),
 }))
 
-import { getToken, clearToken } from './auth'
+import { clearToken } from './auth'
 
 beforeEach(() => {
   vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8080')
