@@ -5,7 +5,8 @@ import { AnomalyBadge } from '../components/AnomalyBadge'
 import { Skeleton } from '../components/ui/skeleton'
 import { Separator } from '../components/ui/separator'
 import { cn } from '../lib/utils'
-import type { Sighting, Vessel } from '../types/api'
+import { VesselCard } from '../components/VesselCard'
+import type { Sighting } from '../types/api'
 
 export function TransitDetail() {
   const { id } = useParams<{ id: string }>()
@@ -38,6 +39,18 @@ export function TransitDetail() {
       <main className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 flex-1">
         {/* Left column */}
         <div className="flex flex-col gap-6">
+          {/* Primary image */}
+          {!transitLoading && transit?.evidence.primary_image?.href && (
+            <section className="rounded-lg border overflow-hidden">
+              <img
+                src={transit.evidence.primary_image.href}
+                alt={transit.vessel.name ?? transit.id}
+                className="w-full object-cover max-h-72"
+              />
+            </section>
+          )}
+          {transitLoading && <Skeleton className="w-full h-48 rounded-lg" />}
+
           {/* Vessel card */}
           <section className="rounded-lg border p-4 flex flex-col gap-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -153,47 +166,23 @@ export function TransitDetail() {
   )
 }
 
-function VesselCard({ vessel }: { vessel: Vessel }) {
-  const rows: [string, string | null | undefined][] = [
-    ['Name', vessel.name],
-    ['IMO', vessel.imo],
-    ['MMSI', vessel.mmsi],
-    ['Callsign', vessel.callsign],
-    ['Flag', vessel.flag],
-    ['Category', vessel.category],
-    ['Type', vessel.subtype?.replace(/_/g, ' ')],
-    [
-      'Dimensions',
-      vessel.dimensions
-        ? `${vessel.dimensions.length_m ?? '?'} m × ${vessel.dimensions.beam_m ?? '?'} m`
-        : null,
-    ],
-  ]
-  return (
-    <div className="flex flex-col gap-1 text-sm">
-      {rows
-        .filter(([, v]) => v != null)
-        .map(([label, value]) => (
-          <div key={label} className="flex justify-between gap-4">
-            <span className="text-muted-foreground shrink-0">{label}</span>
-            <span className="text-right capitalize">{value}</span>
-          </div>
-        ))}
-    </div>
-  )
-}
-
 function SightingCard({ sighting }: { sighting: Sighting }) {
   const vs = sighting.visual_signals
   return (
-    <div className="rounded-lg border p-4 flex flex-col gap-3 text-sm">
+    <div className="rounded-lg border overflow-hidden flex flex-col text-sm">
+      {/* Image placeholder — per-sighting image URLs are not exposed in API v1.0 */}
+      <div className="h-32 bg-muted flex flex-col items-center justify-center gap-1 text-muted-foreground/50">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        {vs?.image.quality && (
+          <span className="text-xs capitalize">{vs.image.quality} quality{vs.image.occluded ? ' · occluded' : ''}</span>
+        )}
+      </div>
+      <div className="p-4 flex flex-col gap-3">
       <div className="flex justify-between items-start">
         <span className="font-medium">{formatDatetime(sighting.sighted_at)}</span>
-        {vs?.image.quality && (
-          <span className="text-xs text-muted-foreground capitalize">
-            {vs.image.quality} quality{vs.image.occluded ? ' · occluded' : ''}
-          </span>
-        )}
       </div>
 
       {vs?.ocr && (
@@ -246,6 +235,7 @@ function SightingCard({ sighting }: { sighting: Sighting }) {
           <span className="capitalize">{vs.cargo_state}</span>
         </div>
       )}
+      </div>
     </div>
   )
 }
