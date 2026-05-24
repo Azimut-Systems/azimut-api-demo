@@ -32,4 +32,14 @@ describe('VesselChip', () => {
     render(<VesselChip vessel={{ ...baseVessel, name: null, imo: null }} />)
     expect(screen.getByText('aid_v_001')).toBeInTheDocument()
   })
+
+  it('renders flag emoji for a 2-letter code', () => {
+    render(<VesselChip vessel={baseVessel} />)
+    expect(screen.getByText('🇩🇪')).toBeInTheDocument()
+  })
+
+  it('renders no flag span when flag is null', () => {
+    const { container } = render(<VesselChip vessel={{ ...baseVessel, flag: null }} />)
+    expect(screen.queryByText('🇩🇪')).not.toBeInTheDocument()
+  })
 })

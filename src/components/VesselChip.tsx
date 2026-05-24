@@ -15,6 +15,7 @@ export function VesselChip({ vessel }: VesselChipProps) {
 }
 
 function flagEmoji(code: string): string {
+  if (!/^[A-Za-z]{2}$/.test(code)) return code
   return code
     .toUpperCase()
     .split('')
