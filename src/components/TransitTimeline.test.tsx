@@ -68,10 +68,11 @@ describe('TransitTimeline', () => {
     expect(screen.getByText(/no transit history/i)).toBeInTheDocument()
   })
 
-  it('shows sighting count indicators', () => {
+  it('renders a transit link for each transit', () => {
+    const second = { ...mockTransit, id: 'tr_18', area: { ...mockTransit.area, name: 'Suez Canal' } }
     wrap(
       <TransitTimeline
-        transits={[mockTransit]}
+        transits={[mockTransit, second]}
         isLoading={false}
         hasPrev={false}
         hasNext={false}
@@ -79,18 +80,21 @@ describe('TransitTimeline', () => {
         onNext={() => {}}
       />,
     )
-    // 3 sightings = 3 placeholder boxes rendered (count ≤ 5)
-    expect(screen.getAllByTitle('Sighting').length).toBe(3)
+    expect(screen.getByText('Strait of Gibraltar')).toBeInTheDocument()
+    expect(screen.getByText('Suez Canal')).toBeInTheDocument()
   })
 
-  it('shows overflow chip and caps at 5 thumbnails when count > 5', () => {
-    const overflowTransit = {
+  it('shows a real image when primary_image href is provided', () => {
+    const transitWithImage = {
       ...mockTransit,
-      evidence: { primary_image: null, sightings: { count: 6, ids: [] } },
+      evidence: {
+        primary_image: { href: 'https://example.com/img.jpg', expires_at: null },
+        sightings: { count: 1, ids: [] },
+      },
     }
     wrap(
       <TransitTimeline
-        transits={[overflowTransit]}
+        transits={[transitWithImage]}
         isLoading={false}
         hasPrev={false}
         hasNext={false}
@@ -98,7 +102,7 @@ describe('TransitTimeline', () => {
         onNext={() => {}}
       />,
     )
-    expect(screen.getAllByTitle('Sighting').length).toBe(5)
-    expect(screen.getByText('+1')).toBeInTheDocument()
+    const img = screen.getByRole('img', { name: 'Strait of Gibraltar' })
+    expect(img).toHaveAttribute('src', 'https://example.com/img.jpg')
   })
 })

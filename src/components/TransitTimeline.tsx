@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Skeleton } from './ui/skeleton'
 import { Button } from './ui/button'
-import { AnomalyBadge } from './AnomalyBadge'
 import { cn } from '../lib/utils'
 import { formatDatetime } from '../lib/formatDatetime'
 import type { Transit } from '../types/api'
@@ -24,8 +23,7 @@ export function TransitTimeline({
   onNext,
 }: TransitTimelineProps) {
   return (
-    <div className="flex flex-col gap-2">
-      {/* Header with pagination */}
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Transit History
@@ -40,120 +38,127 @@ export function TransitTimeline({
         </div>
       </div>
 
-      {/* Timeline rows */}
       {isLoading ? (
-        <div className="flex flex-col gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                {Array.from({ length: 3 }).map((_, j) => (
-                  <Skeleton key={j} className="h-12 w-16 rounded" />
-                ))}
-              </div>
-              <Skeleton className="h-10 w-full rounded-md" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-          ))}
-        </div>
+        <TimelineSkeleton />
       ) : transits.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
           No transit history for this vessel.
         </p>
       ) : (
-        <div className="flex flex-col gap-6">
-          {transits.map((t) => (
-            <TransitRow key={t.id} transit={t} />
-          ))}
+        <div className="overflow-x-auto pb-3 -mx-6 px-6">
+          {/*
+           * Layout per stop:
+           *   thumbnail  h-20 (80px)
+           *   gap mb-5   (20px)
+           *   dot        h-2.5 (10px) → center at 80+20+5 = 105px from top
+           *   gap mt-3   (12px)
+           *   label
+           *
+           * Spine sits at top: 105px
+           */}
+          <div className="relative flex" style={{ minWidth: 'max-content' }}>
+            {/* Spine — behind all dots */}
+            <div
+              className="absolute left-[4.5rem] right-[4.5rem] h-px bg-border"
+              style={{ top: '105px' }}
+            />
+            {transits.map((t) => (
+              <TransitStop key={t.id} transit={t} />
+            ))}
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-function TransitRow({ transit: t }: { transit: Transit }) {
-  const sightingCount = t.evidence.sightings.count
-  const visibleCount = Math.min(sightingCount, 5)
-  const overflow = sightingCount > 5 ? sightingCount - 5 : 0
-
+function TransitStop({ transit: t }: { transit: Transit }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      {/* Sighting thumbnails above bar — first slot uses primary_image when available */}
-      {sightingCount > 0 && (
-        <div className="flex items-end gap-2 px-1">
-          {Array.from({ length: visibleCount }).map((_, i) => {
-            const imgHref = i === 0 ? t.evidence.primary_image?.href : undefined
-            return imgHref ? (
-              <div key={i} title="Sighting" className="h-12 w-14 shrink-0 rounded overflow-hidden bg-muted">
-                <img src={imgHref} alt="Sighting" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div
-                key={i}
-                title="Sighting"
-                className="h-12 w-14 shrink-0 rounded bg-muted flex items-center justify-center text-muted-foreground/40"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-            )
-          })}
-          {overflow > 0 && (
-            <span className="self-center text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5">
-              +{overflow}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Transit bar */}
-      <Link
-        to={`/transits/${t.id}`}
+    <Link
+      to={`/transits/${t.id}`}
+      className="group flex flex-col items-center w-36 shrink-0 px-2 select-none"
+    >
+      {/* Thumbnail — h-20 */}
+      <div
         className={cn(
-          'block w-full rounded-md border px-4 py-2.5 text-sm font-semibold text-center truncate',
-          t.status === 'open'
-            ? 'bg-green-100 border-green-300 text-green-900 hover:bg-green-200'
-            : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200',
+          'relative w-28 h-20 rounded-xl overflow-hidden bg-muted border shadow-sm mb-5',
+          'transition-all duration-150 group-hover:shadow-md group-hover:scale-[1.04]',
         )}
       >
-        {t.area.name}
-      </Link>
-
-      {/* Metadata strip */}
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground px-0.5">
-        <span>
-          {formatDatetime(t.entered_at)}
-          {' → '}
-          {t.exited_at ? (
-            formatDatetime(t.exited_at)
-          ) : (
-            <span className="text-green-600 font-medium">still open</span>
-          )}
-        </span>
-        {t.course && <span className="capitalize">{t.course}</span>}
-        <span>{Math.round(t.identification.confidence * 100)}%</span>
-        {t.anomalies.map((a, i) => (
-          <AnomalyBadge key={i} anomaly={a} />
-        ))}
+        {t.evidence.primary_image?.href ? (
+          <img
+            src={t.evidence.primary_image.href}
+            alt={t.area.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/25">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-7 w-7"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </div>
+        )}
+        {/* Open indicator */}
+        {t.status === 'open' && (
+          <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+          </span>
+        )}
       </div>
-    </div>
+
+      {/* Dot — sits on the spine */}
+      <div
+        className={cn(
+          'relative z-10 w-2.5 h-2.5 rounded-full border-2 border-background shadow transition-colors duration-150',
+          t.status === 'open'
+            ? 'bg-green-500'
+            : 'bg-muted-foreground/30 group-hover:bg-foreground',
+        )}
+      />
+
+      {/* Label */}
+      <div className="mt-3 text-center w-full px-1 space-y-0.5">
+        <p className="text-xs font-medium text-foreground truncate">{t.area.name}</p>
+        <p className="text-[11px] text-muted-foreground tabular-nums leading-relaxed">
+          {formatDatetime(t.entered_at)}
+        </p>
+      </div>
+    </Link>
   )
 }
 
+function TimelineSkeleton() {
+  return (
+    <div className="flex overflow-hidden">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex flex-col items-center w-36 shrink-0 px-2">
+          <Skeleton className="w-28 h-20 rounded-xl mb-5" />
+          <Skeleton className="w-2.5 h-2.5 rounded-full" />
+          <div className="mt-3 space-y-1.5 w-full px-1">
+            <Skeleton className="h-3 w-full rounded" />
+            <Skeleton className="h-2.5 w-3/4 mx-auto rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}

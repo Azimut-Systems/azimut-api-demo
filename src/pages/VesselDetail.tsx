@@ -64,36 +64,32 @@ export function VesselDetail() {
         </h1>
       </header>
 
-      <main className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 flex-1">
-        {/* Left column — vessel identity card */}
-        <div className="flex flex-col gap-6">
-          <section className="rounded-lg border p-4 flex flex-col gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Vessel
-            </h2>
-            {vesselLoading ? (
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-3/4" />
-                ))}
-              </div>
-            ) : vessel ? (
-              <VesselCard vessel={vessel} />
-            ) : null}
-          </section>
-        </div>
+      <main className="flex flex-col gap-8 p-6 flex-1">
+        {/* Vessel identity card — constrained width */}
+        <section className="rounded-lg border p-4 flex flex-col gap-3 self-start min-w-[260px]">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Vessel
+          </h2>
+          {vesselLoading ? (
+            <div className="flex flex-col gap-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-3/4" />
+              ))}
+            </div>
+          ) : vessel ? (
+            <VesselCard vessel={vessel} />
+          ) : null}
+        </section>
 
-        {/* Right column — transit timeline */}
-        <div className="flex flex-col gap-4">
-          <TransitTimeline
-            transits={transits}
-            isLoading={transitsLoading}
-            hasPrev={pageIndex > 0 && !transitsLoading}
-            hasNext={hasMoreNext}
-            onPrev={goPrev}
-            onNext={goNext}
-          />
-        </div>
+        {/* Transit timeline — full width */}
+        <TransitTimeline
+          transits={transits}
+          isLoading={transitsLoading}
+          hasPrev={pageIndex > 0 && !transitsLoading}
+          hasNext={hasMoreNext}
+          onPrev={goPrev}
+          onNext={goNext}
+        />
       </main>
     </div>
   )
