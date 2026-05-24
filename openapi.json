@@ -16,7 +16,7 @@
           "System"
         ],
         "summary": "Liveness probe",
-        "description": "Cheap liveness check \u2014 never hits upstreams.",
+        "description": "Cheap liveness check \u2014 never hits upstreams.\n\nWired to the chart's `livenessProbe`. Must stay dependency-free so an\nupstream outage cannot cascade-restart every gateway replica.",
         "operationId": "health_v1_health_get",
         "responses": {
           "200": {
@@ -60,7 +60,7 @@
           "System"
         ],
         "summary": "Readiness probe",
-        "description": "Verifies the service is ready to serve traffic.\n\nIn the walking skeleton, readiness is just 'app booted'. Follow-ups wire\nin actual upstream checks (Redis, command_center, ais_service).",
+        "description": "Readiness check \u2014 exercises the upstreams the gateway needs.\n\nWired to the chart's `readinessProbe`. Failure here removes the pod\nfrom the Service (does NOT restart it) \u2014 that's `/v1/health`'s job.\n\nA 503 means at least one dependency couldn't answer within\n``_PROBE_TIMEOUT_S`` seconds. The response body breaks the result\ndown per upstream so the probe log is enough to diagnose which one.",
         "operationId": "ready_v1_ready_get",
         "responses": {
           "200": {
@@ -414,7 +414,7 @@
             "description": "ISO-3166 alpha-2 country filter."
           },
           {
-            "name": "super_class",
+            "name": "category",
             "in": "query",
             "required": false,
             "schema": {
@@ -426,11 +426,11 @@
                   "type": "null"
                 }
               ],
-              "title": "Super Class"
+              "title": "Category"
             }
           },
           {
-            "name": "sub_class",
+            "name": "subtype",
             "in": "query",
             "required": false,
             "schema": {
@@ -442,7 +442,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Sub Class"
+              "title": "Subtype"
             }
           },
           {
@@ -853,7 +853,7 @@
             }
           },
           {
-            "name": "super_class",
+            "name": "category",
             "in": "query",
             "required": false,
             "schema": {
@@ -865,11 +865,11 @@
                   "type": "null"
                 }
               ],
-              "title": "Super Class"
+              "title": "Category"
             }
           },
           {
-            "name": "sub_class",
+            "name": "subtype",
             "in": "query",
             "required": false,
             "schema": {
@@ -881,7 +881,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Sub Class"
+              "title": "Subtype"
             }
           },
           {
@@ -975,7 +975,7 @@
             "description": "ISO-8601 UTC."
           },
           {
-            "name": "direction",
+            "name": "course",
             "in": "query",
             "required": false,
             "schema": {
@@ -987,7 +987,7 @@
                   "type": "null"
                 }
               ],
-              "title": "Direction"
+              "title": "Course"
             }
           },
           {
@@ -1305,6 +1305,81 @@
             "lang": "javascript",
             "label": "JavaScript (fetch)",
             "source": "const response = await fetch(\"http://localhost:8080/v1/transits/{transit_id}/sightings\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+          }
+        ]
+      }
+    },
+    "/v1/sightings/{sighting_id}": {
+      "get": {
+        "tags": [
+          "Transits"
+        ],
+        "summary": "Fetch one sighting",
+        "operationId": "get_sighting_v1_sightings__sighting_id__get",
+        "parameters": [
+          {
+            "name": "sighting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sighting Id"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemEnvelope_Sighting_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X GET \"http://localhost:8080/v1/sightings/{sighting_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+          },
+          {
+            "lang": "python",
+            "label": "Python (httpx)",
+            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/sightings/{sighting_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript (fetch)",
+            "source": "const response = await fetch(\"http://localhost:8080/v1/sightings/{sighting_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1673,78 +1748,11 @@
         "type": "string",
         "enum": [
           "global",
-          "local"
+          "site",
+          "session"
         ],
         "title": "AidScope",
         "description": "Whether the AID is resolved against the global registry or local-only."
-      },
-      "AisMatch": {
-        "properties": {
-          "matched": {
-            "type": "boolean",
-            "title": "Matched"
-          },
-          "mmsi": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Mmsi"
-          },
-          "imo": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Imo"
-          },
-          "delta_seconds": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Delta Seconds",
-            "description": "Time gap between AIS broadcast and visual sighting, in seconds."
-          },
-          "distance_m": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Distance M",
-            "description": "Distance between AIS-reported position and visual fix, in metres."
-          },
-          "anomaly": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Anomaly"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "matched"
-        ],
-        "title": "AisMatch",
-        "description": "AIS-vs-visual identity reconciliation block.\n\n`matched=true` with no anomalies means a clean confirmation; `matched=false`\nmeans the vessel was AIS-dark (no broadcast) during the transit;\n`matched=true` with anomalies populated means AIS and visual disagree."
       },
       "Anomaly": {
         "properties": {
@@ -1868,7 +1876,17 @@
           "type": {
             "type": "string",
             "title": "Type",
-            "description": "One of: `chokepoint`, `port`, `anchorage`, `berth`, `site`."
+            "description": "One of: `chokepoint`, `port`, `anchorage`, `eez`, `custom`, `site`."
+          },
+          "centroid": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatLon"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -1887,6 +1905,8 @@
           "chokepoint",
           "port",
           "anchorage",
+          "eez",
+          "custom",
           "berth",
           "site"
         ],
@@ -1918,6 +1938,16 @@
           "grant_type"
         ],
         "title": "Body_mint_token_v1_oauth_token_post"
+      },
+      "CargoState": {
+        "type": "string",
+        "enum": [
+          "laden",
+          "ballast",
+          "partial",
+          "unknown"
+        ],
+        "title": "CargoState"
       },
       "CollectionEnvelope_Area_": {
         "properties": {
@@ -2330,6 +2360,17 @@
         "title": "ContactAlertSummary",
         "description": "Compact alert summary embedded on contacts and vessels."
       },
+      "Course": {
+        "type": "string",
+        "enum": [
+          "northbound",
+          "southbound",
+          "eastbound",
+          "westbound"
+        ],
+        "title": "Course",
+        "description": "Geometric direction of travel."
+      },
       "Dimensions": {
         "properties": {
           "length_m": {
@@ -2373,6 +2414,75 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "ImageQuality": {
+        "type": "string",
+        "enum": [
+          "poor",
+          "fair",
+          "good",
+          "excellent"
+        ],
+        "title": "ImageQuality"
+      },
+      "ImageRef": {
+        "properties": {
+          "href": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Href"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ImageRef",
+        "description": "Customer-viewable image reference."
+      },
+      "ImageSignals": {
+        "properties": {
+          "quality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageQuality"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occluded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occluded"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ImageSignals"
+      },
       "ItemEnvelope_Area_": {
         "properties": {
           "data": {
@@ -2406,6 +2516,23 @@
           "meta"
         ],
         "title": "ItemEnvelope[Contact]"
+      },
+      "ItemEnvelope_Sighting_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Sighting"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ItemEnvelope[Sighting]"
       },
       "ItemEnvelope_Transit_": {
         "properties": {
@@ -2467,6 +2594,21 @@
         "title": "LatLon",
         "description": "WGS84 coordinate pair.\n\nObject form (``{\"lat\": ..., \"lon\": ...}``) is deliberate \u2014 the ordering\nambiguity between ``[lat, lon]`` (maritime) and ``[lon, lat]`` (GeoJSON)\nhas caused enough integration bugs elsewhere to justify the extra bytes."
       },
+      "Link": {
+        "properties": {
+          "href": {
+            "type": "string",
+            "title": "Href"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "href"
+        ],
+        "title": "Link",
+        "description": "Simple resource link used in response bodies."
+      },
       "LinkStatus": {
         "type": "string",
         "enum": [
@@ -2476,6 +2618,46 @@
         ],
         "title": "LinkStatus",
         "description": "Whether a contact has been linked to a known vessel."
+      },
+      "LiverySignals": {
+        "properties": {
+          "hull_main_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hull Main Color"
+          },
+          "hull_accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hull Accent Color"
+          },
+          "funnel_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funnel Color"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LiverySignals"
       },
       "MapMeta": {
         "properties": {
@@ -2660,6 +2842,103 @@
         "title": "MetaResponse",
         "description": "Public runtime metadata. Safe to call on page load; cacheable via ETag."
       },
+      "OcrImoPlateSignal": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "matches_ais_imo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matches Ais Imo"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OcrImoPlateSignal"
+      },
+      "OcrNamePlateSignal": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "matches_ais_name": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matches Ais Name"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OcrNamePlateSignal"
+      },
+      "OcrSignals": {
+        "properties": {
+          "name_plate": {
+            "$ref": "#/components/schemas/OcrNamePlateSignal"
+          },
+          "imo_plate": {
+            "$ref": "#/components/schemas/OcrImoPlateSignal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OcrSignals"
+      },
       "OrgResponse": {
         "properties": {
           "org_id": {
@@ -2720,55 +2999,153 @@
       },
       "Sighting": {
         "properties": {
-          "sighting_id": {
+          "schema_version": {
             "type": "string",
-            "title": "Sighting Id",
+            "title": "Schema Version",
+            "default": "1.0"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
             "description": "Public sighting ID, prefixed `sgt_`."
           },
           "transit_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Transit Id",
             "description": "Parent transit, prefixed `tr_`."
           },
-          "aid": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Aid"
-          },
-          "imo": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Imo"
-          },
-          "camera_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Camera Id",
-            "description": "Public camera id (`cam_<base32>`) of the observing camera."
+          "vessel": {
+            "$ref": "#/components/schemas/SightingVessel"
           },
           "sighted_at": {
             "type": "string",
             "format": "date-time",
             "title": "Sighted At"
           },
+          "source": {
+            "$ref": "#/components/schemas/SightingSource"
+          },
+          "identification": {
+            "$ref": "#/components/schemas/SightingIdentification"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatLon"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "images": {
+            "$ref": "#/components/schemas/SightingImages"
+          },
+          "visual_signals": {
+            "$ref": "#/components/schemas/VisualSignals"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "links": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Link"
+            },
+            "type": "object",
+            "title": "Links"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "vessel",
+          "sighted_at",
+          "source",
+          "identification",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Sighting",
+        "description": "A single visual observation that contributed to a transit.",
+        "example": {
+          "created_at": "2026-05-18T08:14:23Z",
+          "id": "sgt_200",
+          "identification": {
+            "ais_matched": true,
+            "confidence": 0.94,
+            "method": "visual"
+          },
+          "images": {
+            "crops": [
+              {
+                "href": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg"
+              }
+            ],
+            "primary": {
+              "href": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg"
+            }
+          },
+          "links": {
+            "self": {
+              "href": "/v1/sightings/sgt_200"
+            },
+            "transit": {
+              "href": "/v1/transits/tr_17"
+            },
+            "vessel": {
+              "href": "/v1/vessels/aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF"
+            }
+          },
+          "schema_version": "1.0",
+          "sighted_at": "2026-05-18T08:14:22Z",
+          "source": {
+            "area_id": "ar_4",
+            "camera_id": "cam_11"
+          },
+          "transit_id": "tr_17",
+          "updated_at": "2026-05-18T08:14:30Z",
+          "vessel": {
+            "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+            "aid_scope": "global",
+            "imo": "9301234",
+            "name": "MS HAMBURG EXPRESS"
+          },
+          "visual_signals": {
+            "appearance_flags": [],
+            "cargo_state": "unknown",
+            "image": {
+              "occluded": false,
+              "quality": "good"
+            },
+            "livery": {
+              "funnel_color": "white",
+              "hull_accent_color": "blue",
+              "hull_main_color": "red"
+            },
+            "ocr": {
+              "imo_plate": {},
+              "name_plate": {}
+            }
+          }
+        }
+      },
+      "SightingIdentification": {
+        "properties": {
           "confidence": {
             "anyOf": [
               {
@@ -2782,7 +3159,58 @@
             ],
             "title": "Confidence"
           },
-          "image_url": {
+          "ais_matched": {
+            "type": "boolean",
+            "title": "Ais Matched"
+          },
+          "method": {
+            "$ref": "#/components/schemas/SightingIdentificationMethod",
+            "default": "visual"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ais_matched"
+        ],
+        "title": "SightingIdentification"
+      },
+      "SightingIdentificationMethod": {
+        "type": "string",
+        "enum": [
+          "visual",
+          "ais",
+          "human"
+        ],
+        "title": "SightingIdentificationMethod"
+      },
+      "SightingImages": {
+        "properties": {
+          "primary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "crops": {
+            "items": {
+              "$ref": "#/components/schemas/ImageRef"
+            },
+            "type": "array",
+            "title": "Crops"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SightingImages"
+      },
+      "SightingSource": {
+        "properties": {
+          "camera_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -2791,35 +3219,67 @@
                 "type": "null"
               }
             ],
-            "title": "Image Url",
-            "description": "URL to the sighting's primary crop."
+            "title": "Camera Id"
           },
-          "verified": {
-            "type": "boolean",
-            "title": "Verified",
-            "default": false
+          "area_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Id"
           }
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "sighting_id",
-          "transit_id",
-          "sighted_at"
-        ],
-        "title": "Sighting",
-        "description": "A single visual observation that contributed to a transit.",
-        "example": {
-          "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
-          "camera_id": "cam_KZ4PFM7N8YT9ZAB0",
-          "confidence": 0.94,
-          "image_url": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg",
-          "imo": "9301234",
-          "sighted_at": "2026-05-18T08:14:22Z",
-          "sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDEF",
-          "transit_id": "tr_01HX2K3D4PFM7N8YT9ZAB0CDEF",
-          "verified": true
-        }
+        "title": "SightingSource"
+      },
+      "SightingVessel": {
+        "properties": {
+          "aid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aid"
+          },
+          "aid_scope": {
+            "$ref": "#/components/schemas/AidScope",
+            "default": "global"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "imo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SightingVessel"
       },
       "TokenResponse": {
         "properties": {
@@ -2871,16 +3331,31 @@
       },
       "Transit": {
         "properties": {
-          "transit_id": {
+          "schema_version": {
             "type": "string",
-            "title": "Transit Id",
-            "description": "Stable, opaque ID. Prefixed `tr_`."
+            "title": "Schema Version",
+            "default": "1.0"
           },
-          "area": {
-            "$ref": "#/components/schemas/AreaRef"
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable public transit ID. Prefixed `tr_`."
           },
-          "vessel": {
-            "$ref": "#/components/schemas/Vessel"
+          "status": {
+            "$ref": "#/components/schemas/TransitStatus"
+          },
+          "transit_kind": {
+            "$ref": "#/components/schemas/TransitKind"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Course"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "entered_at": {
             "type": "string",
@@ -2899,40 +3374,19 @@
               }
             ],
             "title": "Exited At",
-            "description": "Last confirmed sighting. Null while the transit is still open."
+            "description": "Last confirmed sighting. Null while status is open."
           },
-          "direction": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TransitDirection"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "area": {
+            "$ref": "#/components/schemas/AreaRef"
           },
-          "status": {
-            "$ref": "#/components/schemas/TransitStatus"
+          "vessel": {
+            "$ref": "#/components/schemas/Vessel"
           },
-          "confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Confidence",
-            "description": "Identity + trajectory confidence."
+          "identification": {
+            "$ref": "#/components/schemas/TransitIdentification"
           },
-          "ais_match": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/AisMatch"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "evidence": {
-            "$ref": "#/components/schemas/TransitEvidence"
+          "visual_signals": {
+            "$ref": "#/components/schemas/VisualSignals"
           },
           "anomalies": {
             "items": {
@@ -2940,6 +3394,9 @@
             },
             "type": "array",
             "title": "Anomalies"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/TransitEvidence"
           },
           "created_at": {
             "type": "string",
@@ -2950,17 +3407,25 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "links": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Link"
+            },
+            "type": "object",
+            "title": "Links"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "transit_id",
+          "id",
+          "status",
+          "transit_kind",
+          "entered_at",
           "area",
           "vessel",
-          "entered_at",
-          "status",
-          "confidence",
+          "identification",
           "evidence",
           "created_at",
           "updated_at"
@@ -2968,39 +3433,60 @@
         "title": "Transit",
         "description": "A monitored passage of one vessel through one area.",
         "example": {
-          "ais_match": {
-            "anomaly": [],
-            "delta_seconds": 4,
-            "distance_m": 18.2,
-            "imo": "9301234",
-            "matched": true,
-            "mmsi": "211281000"
-          },
           "anomalies": [],
           "area": {
+            "centroid": {
+              "lat": 36.0,
+              "lon": -5.35
+            },
             "id": "ar_42",
-            "name": "Elbe \u2014 Grauerort",
+            "name": "Strait of Gibraltar",
             "type": "chokepoint"
           },
-          "confidence": 0.97,
+          "course": "westbound",
           "created_at": "2026-05-18T08:14:25Z",
-          "direction": "westbound",
           "entered_at": "2026-05-18T08:14:22Z",
           "evidence": {
-            "first_sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDE0",
-            "gallery_url": "https://images.azimut.ai/i/hR4sQe0LkW8nYv1Pc2aBdG.jpg",
-            "last_sighting_id": "sgt_01HX2K3D4PFM7N8YT9ZAB0CDEZ",
-            "primary_image_url": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg",
-            "sighting_count": 23
+            "primary_image": {
+              "href": "https://images.azimut.ai/i/Fn7v4bD8mJ2pQx9sAa3TzQ.jpg"
+            },
+            "sightings": {
+              "count": 23,
+              "ids": [
+                "sgt_100",
+                "sgt_101"
+              ]
+            }
           },
           "exited_at": "2026-05-18T08:31:07Z",
+          "id": "tr_17",
+          "identification": {
+            "ais_matched": true,
+            "confidence": 0.97
+          },
+          "links": {
+            "area": {
+              "href": "/v1/areas/ar_42"
+            },
+            "self": {
+              "href": "/v1/transits/tr_17"
+            },
+            "sightings": {
+              "href": "/v1/transits/tr_17/sightings"
+            },
+            "vessel": {
+              "href": "/v1/vessels/aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF"
+            }
+          },
+          "schema_version": "1.0",
           "status": "closed",
-          "transit_id": "tr_01HX2K3D4PFM7N8YT9ZAB0CDEF",
+          "transit_kind": "crossing",
           "updated_at": "2026-05-18T08:31:09Z",
           "vessel": {
             "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
             "aid_scope": "global",
             "callsign": "DHHE",
+            "category": "merchant",
             "dimensions": {
               "beam_m": 48.2,
               "length_m": 366.0
@@ -3010,83 +3496,107 @@
             "mmsi": "211281000",
             "name": "MS HAMBURG EXPRESS",
             "previous_aids": [],
-            "sub_class": "containers",
-            "super_class": "merchant"
+            "subtype": "containers"
+          },
+          "visual_signals": {
+            "appearance_flags": [],
+            "cargo_state": "unknown",
+            "image": {
+              "occluded": false,
+              "quality": "good"
+            },
+            "livery": {
+              "funnel_color": "white",
+              "hull_accent_color": "blue",
+              "hull_main_color": "red"
+            },
+            "ocr": {
+              "imo_plate": {},
+              "name_plate": {}
+            }
           }
         }
       },
-      "TransitDirection": {
-        "type": "string",
-        "enum": [
-          "inbound",
-          "outbound",
-          "northbound",
-          "southbound",
-          "eastbound",
-          "westbound"
-        ],
-        "title": "TransitDirection",
-        "description": "Direction of travel through the area."
-      },
       "TransitEvidence": {
         "properties": {
-          "sighting_count": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Sighting Count"
-          },
-          "primary_image_url": {
+          "primary_image": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ImageRef"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Primary Image Url"
+            ]
           },
-          "gallery_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Gallery Url"
-          },
-          "first_sighting_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Sighting Id"
-          },
-          "last_sighting_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Sighting Id"
+          "sightings": {
+            "$ref": "#/components/schemas/TransitSightingsEvidence"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "sighting_count"
+          "sightings"
         ],
         "title": "TransitEvidence",
-        "description": "Evidence summary on a Transit. Counts and pointers, not raw data."
+        "description": "Evidence summary on a Transit. Counts and links, not raw data."
+      },
+      "TransitIdentification": {
+        "properties": {
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "ais_matched": {
+            "type": "boolean",
+            "title": "Ais Matched"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confidence",
+          "ais_matched"
+        ],
+        "title": "TransitIdentification",
+        "description": "How confidently Azimut resolved the visual identity."
+      },
+      "TransitKind": {
+        "type": "string",
+        "enum": [
+          "crossing",
+          "entry",
+          "exit",
+          "internal"
+        ],
+        "title": "TransitKind",
+        "description": "Topological relationship to the monitored area."
+      },
+      "TransitSightingsEvidence": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count"
+          },
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Ids",
+            "description": "Preview list of sighting IDs for this transit. Use `links.sightings` for the full list."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "count"
+        ],
+        "title": "TransitSightingsEvidence",
+        "description": "Sighting evidence summary for a transit."
       },
       "TransitStatus": {
         "type": "string",
@@ -3194,7 +3704,7 @@
             ],
             "title": "Callsign"
           },
-          "super_class": {
+          "category": {
             "anyOf": [
               {
                 "type": "string"
@@ -3203,10 +3713,10 @@
                 "type": "null"
               }
             ],
-            "title": "Super Class",
+            "title": "Category",
             "description": "Top-level category. One of: merchant, support, motor, military."
           },
-          "sub_class": {
+          "subtype": {
             "anyOf": [
               {
                 "type": "string"
@@ -3215,7 +3725,7 @@
                 "type": "null"
               }
             ],
-            "title": "Sub Class",
+            "title": "Subtype",
             "description": "Sub-classification. v1 values: containers, bulk, tanker, general_cargo, ro_ro, cruise_passenger, ferry, tug, supply_utility, yacht, fishing, pilot_patrol, military."
           },
           "flag": {
@@ -3260,6 +3770,7 @@
           "aid": "aid_v_01HX2K3D4PFM7N8YT9ZAB0CDEF",
           "aid_scope": "global",
           "callsign": "DHHE",
+          "category": "merchant",
           "dimensions": {
             "beam_m": 48.2,
             "length_m": 366.0
@@ -3269,8 +3780,7 @@
           "mmsi": "211281000",
           "name": "MS HAMBURG EXPRESS",
           "previous_aids": [],
-          "sub_class": "containers",
-          "super_class": "merchant"
+          "subtype": "containers"
         }
       },
       "VesselRef": {
@@ -3333,6 +3843,46 @@
         ],
         "title": "VesselRef",
         "description": "Lightweight vessel reference embedded on contacts when linked.\n\nCallers who want the full record use ``?expand=vessel``."
+      },
+      "VisualSignals": {
+        "properties": {
+          "cargo_state": {
+            "$ref": "#/components/schemas/CargoState",
+            "default": "unknown"
+          },
+          "cargo_state_confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cargo State Confidence"
+          },
+          "livery": {
+            "$ref": "#/components/schemas/LiverySignals"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrSignals"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageSignals"
+          },
+          "appearance_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Appearance Flags"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "VisualSignals"
       },
       "WsTicketResponse": {
         "properties": {
