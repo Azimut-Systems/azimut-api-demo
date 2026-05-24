@@ -104,13 +104,17 @@ function VesselCard({ vessel }: { vessel: Vessel }) {
       </div>
 
       {/* Body */}
-      <div className="p-3 flex flex-col gap-1.5">
+      <div className="p-3 flex flex-col gap-1">
         <p className="font-semibold text-sm leading-snug truncate">
           {vessel.name ?? <span className="text-muted-foreground italic">Unnamed</span>}
         </p>
 
+        {vessel.imo && (
+          <p className="text-xs text-muted-foreground font-mono">IMO {vessel.imo}</p>
+        )}
+
         {meta && (
-          <p className="text-xs text-muted-foreground capitalize truncate">{meta}</p>
+          <p className="text-xs text-muted-foreground capitalize truncate mt-0.5">{meta}</p>
         )}
 
         {vessel.dimensions && (
