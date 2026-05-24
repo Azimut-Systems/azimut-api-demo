@@ -54,7 +54,7 @@ export function VesselDetail() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
       <header className="flex items-center gap-4 px-6 py-4 border-b bg-background shrink-0">
         <Link to="/vessels" className="text-sm text-muted-foreground hover:text-foreground">
@@ -65,8 +65,8 @@ export function VesselDetail() {
         </h1>
       </header>
 
-      {/* Hero */}
-      <div className="relative h-56 bg-slate-900 overflow-hidden shrink-0">
+      {/* Hero — fixed vh height so page never scrolls */}
+      <div className="relative h-[40vh] bg-slate-900 overflow-hidden shrink-0">
         {heroHref && (
           <img
             src={heroHref}
@@ -131,7 +131,7 @@ export function VesselDetail() {
       </div>
 
       {/* Transit timeline */}
-      <main className="flex flex-col gap-4 p-6 flex-1">
+      <main className="flex flex-col gap-4 p-6 flex-1 min-h-0 overflow-y-auto">
         <TransitTimeline
           transits={transits}
           isLoading={transitsLoading}

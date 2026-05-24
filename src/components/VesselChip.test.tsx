@@ -39,7 +39,7 @@ describe('VesselChip', () => {
   })
 
   it('renders no flag span when flag is null', () => {
-    const { container } = render(<VesselChip vessel={{ ...baseVessel, flag: null }} />)
+    render(<VesselChip vessel={{ ...baseVessel, flag: null }} />)
     expect(screen.queryByText('🇩🇪')).not.toBeInTheDocument()
   })
 })

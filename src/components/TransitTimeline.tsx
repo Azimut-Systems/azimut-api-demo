@@ -214,6 +214,17 @@ function TransitStop({ transit: t }: { transit: Transit }) {
         <p className="text-[11px] text-muted-foreground tabular-nums leading-relaxed">
           {formatDatetime(t.entered_at)}
         </p>
+        {t.visual_signals?.cargo_state && t.visual_signals.cargo_state !== 'unknown' && (
+          <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+            t.visual_signals.cargo_state === 'laden'
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+              : t.visual_signals.cargo_state === 'ballast'
+              ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+          }`}>
+            {t.visual_signals.cargo_state}
+          </span>
+        )}
       </div>
     </Link>
   )

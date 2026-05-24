@@ -75,9 +75,12 @@ function VesselCard({ vessel }: { vessel: Vessel }) {
     .filter(Boolean)
     .join(' · ')
 
+  // A vessel is considered sparse if it has no IMO and no category — likely a stub record
+  const isSparse = !vessel.imo && !vessel.category
+
   return (
     <div
-      className="group cursor-pointer rounded-xl border bg-card overflow-hidden transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5"
+      className={`group cursor-pointer rounded-xl border bg-card overflow-hidden transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 ${isSparse ? 'opacity-50' : ''}`}
       onClick={() => navigate(`/vessels/${vessel.aid}`)}
     >
       {/* Thumbnail */}

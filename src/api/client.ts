@@ -1,12 +1,14 @@
 import { getToken, clearToken } from './auth'
 
 export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly body: unknown,
-  ) {
+  readonly status: number
+  readonly body: unknown
+
+  constructor(status: number, body: unknown) {
     super(`API error ${status}`)
     this.name = 'ApiError'
+    this.status = status
+    this.body = body
   }
 }
 
