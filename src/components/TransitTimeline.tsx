@@ -3,7 +3,8 @@ import { Skeleton } from './ui/skeleton'
 import { Button } from './ui/button'
 import { cn } from '../lib/utils'
 import { formatDatetime } from '../lib/formatDatetime'
-import type { Transit } from '../types/api'
+import { useTransitCargoVote } from '../hooks/useTransitCargoVote'
+import type { Transit, CargoState } from '../types/api'
 
 interface TransitTimelineProps {
   transits: Transit[]
@@ -121,7 +122,7 @@ export function TransitTimeline({
          */
         <div className="overflow-x-auto pb-3">
           <div
-            className="relative min-h-[10rem]"
+            className="relative min-h-[15rem]"
             style={ordered.length <= 3 ? { width: `min(100%, ${ordered.length * 18}rem)` } : undefined}
           >
             {/* Spine */}
@@ -146,7 +147,23 @@ export function TransitTimeline({
   )
 }
 
+const CARGO_STYLES: Record<CargoState, string> = {
+  laden:   'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  ballast: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  partial: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  unknown: '',
+}
+
+const COURSE_ARROW: Record<string, string> = {
+  northbound: '↑',
+  southbound: '↓',
+  eastbound:  '→',
+  westbound:  '←',
+}
+
 function TransitStop({ transit: t }: { transit: Transit }) {
+  const cargoVote = useTransitCargoVote(t.id)
+
   return (
     <Link
       to={`/transits/${t.id}`}
@@ -214,16 +231,15 @@ function TransitStop({ transit: t }: { transit: Transit }) {
         <p className="text-[11px] text-muted-foreground tabular-nums leading-relaxed">
           {formatDatetime(t.entered_at)}
         </p>
-        {t.visual_signals?.cargo_state && t.visual_signals.cargo_state !== 'unknown' && (
-          <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-            t.visual_signals.cargo_state === 'laden'
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-              : t.visual_signals.cargo_state === 'ballast'
-              ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-          }`}>
-            {t.visual_signals.cargo_state}
+        {cargoVote && cargoVote !== 'unknown' && (
+          <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full ${CARGO_STYLES[cargoVote]}`}>
+            {cargoVote}
           </span>
+        )}
+        {t.course && (
+          <p className="text-[10px] text-muted-foreground">
+            {COURSE_ARROW[t.course]} {t.course}
+          </p>
         )}
       </div>
     </Link>

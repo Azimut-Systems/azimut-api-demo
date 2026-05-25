@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Skeleton } from './ui/skeleton'
 import { useVesselThumbnail } from '../hooks/useVesselThumbnail'
@@ -65,7 +65,6 @@ export function VesselGrid({
 }
 
 function VesselCard({ vessel }: { vessel: Vessel }) {
-  const navigate = useNavigate()
   const { data: thumbnailHref } = useVesselThumbnail(vessel.aid)
 
   const meta = [
@@ -79,9 +78,9 @@ function VesselCard({ vessel }: { vessel: Vessel }) {
   const isSparse = !vessel.imo && !vessel.category
 
   return (
-    <div
-      className={`group cursor-pointer rounded-xl border bg-card overflow-hidden transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 ${isSparse ? 'opacity-50' : ''}`}
-      onClick={() => navigate(`/vessels/${vessel.aid}`)}
+    <Link
+      to={`/vessels/${vessel.aid}`}
+      className={`group block rounded-xl border bg-card overflow-hidden transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 ${isSparse ? 'opacity-50' : ''}`}
     >
       {/* Thumbnail */}
       <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
@@ -126,7 +125,7 @@ function VesselCard({ vessel }: { vessel: Vessel }) {
           </p>
         )}
       </div>
-    </div>
+    </Link>
   )
 }
 
