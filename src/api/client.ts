@@ -13,7 +13,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL
+  const baseUrl = ''  // requests go to /v1/... and are proxied by Vite (see vite.config.ts)
   const token = await getToken()
 
   const res = await fetch(`${baseUrl}${path}`, {

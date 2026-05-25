@@ -25,7 +25,7 @@ export function clearToken(): void {
 async function mintToken(): Promise<string> {
   const clientId = import.meta.env.VITE_CLIENT_ID
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET
-  const baseUrl = import.meta.env.VITE_API_BASE_URL
+  const baseUrl = ''  // requests go to /v1/... and are proxied by Vite (see vite.config.ts)
 
   const credentials = btoa(`${clientId}:${clientSecret}`)
   const res = await fetch(`${baseUrl}/v1/oauth/token`, {
