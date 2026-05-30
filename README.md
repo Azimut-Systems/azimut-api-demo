@@ -25,15 +25,15 @@ Open the local URL printed by Vite, usually `http://localhost:5173`.
 
 | Variable | Description |
 |---|---|
-| `VITE_API_BASE_URL` | Optional API base URL for the Vite proxy. Defaults to `https://api.azimut.ai` when unset. |
+| `VITE_API_BASE_URL` | API base URL for the Vite proxy. The example env file sets this to `https://api.azimut.ai`. |
 | `VITE_CLIENT_ID` | Azimut OAuth2 client ID. |
 | `VITE_CLIENT_SECRET` | Azimut OAuth2 client secret. |
 
-For normal client use, leave `VITE_API_BASE_URL` empty. Set it only when testing against another Azimut API environment.
+For normal client use, keep `VITE_API_BASE_URL=https://api.azimut.ai`. Change it only when testing against another Azimut API environment.
 
 ## How the app talks to the API
 
-Browser requests are sent to local `/v1/...` paths. During development, Vite proxies those requests to `VITE_API_BASE_URL`, or to `https://api.azimut.ai` when the variable is empty. This avoids browser CORS issues while keeping the API host configurable.
+Browser requests are sent to local `/v1/...` paths. During development, Vite proxies those requests to `VITE_API_BASE_URL`. This avoids browser CORS issues while keeping the API host configurable.
 
 ## Stack
 
