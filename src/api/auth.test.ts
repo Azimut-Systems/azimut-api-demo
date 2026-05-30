@@ -4,7 +4,7 @@ import { getToken, clearToken } from './auth'
 const MOCK_ENV = {
   VITE_CLIENT_ID: 'test-id',
   VITE_CLIENT_SECRET: 'test-secret',
-  VITE_API_BASE_URL: 'http://localhost:8080',
+  VITE_API_BASE_URL: 'https://api.azimut.ai',
 }
 
 function mockSuccessfulTokenFetch(expiresIn = 3600) {

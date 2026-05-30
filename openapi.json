@@ -39,17 +39,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/health\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/health\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/health\")\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/health\")\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/health\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/health\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -81,17 +81,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/ready\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/ready\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/ready\")\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/ready\")\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/ready\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/ready\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -120,17 +120,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/meta\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/meta\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/meta\")\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/meta\")\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/meta\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/meta\", {\n  method: \"GET\"\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -186,17 +186,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X POST \"http://localhost:8080/v1/oauth/token\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ ... }'"
+            "source": "curl -X POST \"https://api.azimut.ai/v1/oauth/token\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ ... }'"
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.post(\"http://localhost:8080/v1/oauth/token\", headers={\"Content-Type\": \"application/json\"}, json={...})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.post(\"https://api.azimut.ai/v1/oauth/token\", headers={\"Content-Type\": \"application/json\"}, json={...})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/oauth/token\", {\n  method: \"POST\",\n  headers: {\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({ /* ... */ })\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/oauth/token\", {\n  method: \"POST\",\n  headers: {\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({ /* ... */ })\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -252,17 +252,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/me\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/me\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/me\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/me\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/me\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/me\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -318,17 +318,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/org\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/org\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/org\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/org\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/org\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/org\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -518,17 +518,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/vessels\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/vessels\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/vessels\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/vessels\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -593,17 +593,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/vessels/{aid_param}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/vessels/{aid_param}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels/{aid_param}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/vessels/{aid_param}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels/{aid_param}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/vessels/{aid_param}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -761,17 +761,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/vessels/{aid_param}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/vessels/{aid_param}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/vessels/{aid_param}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/vessels/{aid_param}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/vessels/{aid_param}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/vessels/{aid_param}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1144,17 +1144,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1219,17 +1219,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/transits/{transit_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/transits/{transit_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits/{transit_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/transits/{transit_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/transits/{transit_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/transits/{transit_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1294,17 +1294,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/transits/{transit_id}/sightings\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/transits/{transit_id}/sightings\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/transits/{transit_id}/sightings\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/transits/{transit_id}/sightings\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/transits/{transit_id}/sightings\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/transits/{transit_id}/sightings\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1369,17 +1369,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/sightings/{sighting_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/sightings/{sighting_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/sightings/{sighting_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/sightings/{sighting_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/sightings/{sighting_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/sightings/{sighting_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1483,17 +1483,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/areas\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/areas\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/areas\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/areas\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/areas\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1558,17 +1558,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/areas/{area_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/areas/{area_id}\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas/{area_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/areas/{area_id}\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/areas/{area_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/areas/{area_id}\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -1726,17 +1726,17 @@
           {
             "lang": "curl",
             "label": "curl",
-            "source": "curl -X GET \"http://localhost:8080/v1/areas/{area_id}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
+            "source": "curl -X GET \"https://api.azimut.ai/v1/areas/{area_id}/transits\" \\\n  -H \"Authorization: Bearer $ACCESS_TOKEN\""
           },
           {
             "lang": "python",
             "label": "Python (httpx)",
-            "source": "import httpx\n\nresponse = httpx.get(\"http://localhost:8080/v1/areas/{area_id}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
+            "source": "import httpx\n\nresponse = httpx.get(\"https://api.azimut.ai/v1/areas/{area_id}/transits\", headers={\"Authorization\": f\"Bearer {access_token}\"})\nresponse.raise_for_status()\ndata = response.json()"
           },
           {
             "lang": "javascript",
             "label": "JavaScript (fetch)",
-            "source": "const response = await fetch(\"http://localhost:8080/v1/areas/{area_id}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
+            "source": "const response = await fetch(\"https://api.azimut.ai/v1/areas/{area_id}/transits\", {\n  method: \"GET\",\n  headers: {\n    \"Authorization\": `Bearer ${accessToken}`\n  }\n});\nif (!response.ok) throw new Error(`${response.status}`);\nconst data = await response.json();"
           }
         ]
       }
@@ -3914,7 +3914,7 @@
         "description": "OAuth 2.0 client_credentials grant. Mint a token at `/v1/oauth/token`.",
         "flows": {
           "clientCredentials": {
-            "tokenUrl": "http://localhost:8080/v1/oauth/token",
+            "tokenUrl": "https://api.azimut.ai/v1/oauth/token",
             "scopes": {
               "transits:read": "List and read transits and their sightings.",
               "vessels:read": "Read vessel identities and transit history.",
@@ -3976,8 +3976,8 @@
   ],
   "servers": [
     {
-      "url": "http://localhost:8080",
-      "description": "Local"
+      "url": "https://api.azimut.ai",
+      "description": "Production"
     }
   ],
   "security": [

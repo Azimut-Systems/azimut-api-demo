@@ -9,7 +9,7 @@ vi.mock('./auth', () => ({
 import { clearToken } from './auth'
 
 beforeEach(() => {
-  vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:8080')
+  vi.stubEnv('VITE_API_BASE_URL', 'https://api.azimut.ai')
 })
 
 afterEach(() => {
@@ -31,7 +31,7 @@ describe('apiClient.request', () => {
     const result = await apiClient.request('/v1/transits')
     expect(result).toEqual({ data: [] })
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/transits',
+      '/v1/transits',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer tok_good' }),
       }),
