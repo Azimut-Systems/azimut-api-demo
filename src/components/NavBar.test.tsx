@@ -14,6 +14,15 @@ describe('NavBar', () => {
     expect(screen.getByRole('link', { name: 'Vessels' })).toBeInTheDocument()
   })
 
+  it('renders Vessels before Transits', () => {
+    wrap(<NavBar />)
+
+    const vessels = screen.getByRole('link', { name: 'Vessels' })
+    const transits = screen.getByRole('link', { name: 'Transits' })
+
+    expect(vessels.compareDocumentPosition(transits)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+
   it('shows org_id when provided', () => {
     wrap(<NavBar orgId="azimut" />)
     expect(screen.getByText('azimut')).toBeInTheDocument()

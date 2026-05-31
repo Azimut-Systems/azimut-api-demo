@@ -1,5 +1,5 @@
 import { LogOut } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../api/auth'
 import { cn } from '../lib/utils'
 import { Button } from './ui/button'
@@ -10,12 +10,15 @@ interface NavBarProps {
 }
 
 export function NavBar({ orgId, showLiveIndicator }: NavBarProps) {
+  const location = useLocation()
   const navigate = useNavigate()
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
+  const linkClass = (isActive: boolean) =>
     cn(
       'text-sm font-medium transition-colors',
       isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
     )
+  const isTransitsActive = location.pathname === '/transits' || location.pathname.startsWith('/transits/')
+  const isVesselsActive = location.pathname === '/' || location.pathname.startsWith('/vessels')
 
   return (
     <header className="flex items-center gap-6 px-6 py-4 border-b bg-background">
@@ -23,12 +26,12 @@ export function NavBar({ orgId, showLiveIndicator }: NavBarProps) {
         Azimut
       </span>
       <nav className="flex items-center gap-5">
-        <NavLink to="/" end className={linkClass}>
-          Transits
-        </NavLink>
-        <NavLink to="/vessels" className={linkClass}>
+        <Link to="/" className={linkClass(isVesselsActive)}>
           Vessels
-        </NavLink>
+        </Link>
+        <Link to="/transits" className={linkClass(isTransitsActive)}>
+          Transits
+        </Link>
       </nav>
       <div className="ml-auto flex items-center gap-3">
         {orgId && (

@@ -11,9 +11,10 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<RequireAuth><TransitFeed /></RequireAuth>} />
+      <Route path="/" element={<RequireAuth><VesselList /></RequireAuth>} />
+      <Route path="/transits" element={<RequireAuth><TransitFeed /></RequireAuth>} />
       <Route path="/transits/:id" element={<RequireAuth><TransitDetail /></RequireAuth>} />
-      <Route path="/vessels" element={<RequireAuth><VesselList /></RequireAuth>} />
+      <Route path="/vessels" element={<Navigate to="/" replace />} />
       <Route path="/vessels/:aid" element={<RequireAuth><VesselDetail /></RequireAuth>} />
     </Routes>
   )

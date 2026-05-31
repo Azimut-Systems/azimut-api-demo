@@ -57,8 +57,23 @@ describe('App auth routes', () => {
     expect(screen.queryByText('Transit feed')).not.toBeInTheDocument()
   })
 
+  it('uses vessels as the authenticated home page', () => {
+    auth.authed = true
+    renderApp('/')
+
+    expect(screen.getByText('Vessel list')).toBeInTheDocument()
+    expect(screen.queryByText('Transit feed')).not.toBeInTheDocument()
+  })
+
+  it('keeps the transit feed available at /transits', () => {
+    auth.authed = true
+    renderApp('/transits')
+
+    expect(screen.getByText('Transit feed')).toBeInTheDocument()
+  })
+
   it('returns to the requested route after successful login', async () => {
-    renderApp('/vessels')
+    renderApp('/')
 
     fireEvent.change(screen.getByLabelText('Client ID'), {
       target: { value: 'client-id' },
