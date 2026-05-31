@@ -3,15 +3,17 @@ import { describe, expect, it, vi } from 'vitest'
 import { VesselFilters } from './VesselFilters'
 
 describe('VesselFilters', () => {
-  it('normalizes category filters to lowercase', () => {
+  it('normalizes category filters without rewriting the textbox', () => {
     const onChange = vi.fn()
 
     render(<VesselFilters filters={{}} onChange={onChange} />)
 
-    fireEvent.change(screen.getByPlaceholderText(/category/i), {
-      target: { value: ' Merchant ' },
+    const category = screen.getByPlaceholderText(/category/i)
+    fireEvent.change(category, {
+      target: { value: ' merchant ' },
     })
 
-    expect(onChange).toHaveBeenCalledWith({ category: 'merchant' })
+    expect(onChange).toHaveBeenCalledWith({ category: 'Merchant' })
+    expect(category).toHaveValue(' merchant ')
   })
 })

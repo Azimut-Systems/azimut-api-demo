@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import type { VesselFiltersInput } from '../hooks/useVessels'
@@ -11,17 +11,28 @@ interface VesselFiltersProps {
 export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
   // Local state for search so we can debounce without blocking the input
   const [localQ, setLocalQ] = useState(filters.q ?? '')
+  const flagRef = useRef<HTMLInputElement>(null)
+  const categoryRef = useRef<HTMLInputElement>(null)
+  const subtypeRef = useRef<HTMLInputElement>(null)
 
   // Debounce: fire onChange 300ms after the user stops typing
   useEffect(() => {
     const t = setTimeout(() => {
-      onChange({ ...filters, q: localQ || undefined })
+      onChange({
+        flag: filters.flag,
+        category: filters.category,
+        subtype: filters.subtype,
+        q: localQ || undefined,
+      })
     }, 300)
     return () => clearTimeout(t)
-  }, [localQ, filters, onChange])
+  }, [localQ, filters.flag, filters.category, filters.subtype, onChange])
 
   function clear() {
     setLocalQ('')
+    if (flagRef.current) flagRef.current.value = ''
+    if (categoryRef.current) categoryRef.current.value = ''
+    if (subtypeRef.current) subtypeRef.current.value = ''
     onChange({})
   }
 
@@ -35,28 +46,31 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
       />
 
       <Input
+        ref={flagRef}
         className="h-8 w-24 uppercase"
         placeholder="Flag (DE…)"
         maxLength={2}
-        value={filters.flag ?? ''}
+        defaultValue={filters.flag ?? ''}
         onChange={(e) =>
           onChange({ ...filters, flag: e.target.value.toUpperCase() || undefined })
         }
       />
 
       <Input
+        ref={categoryRef}
         className="h-8 w-32"
         placeholder="Category…"
-        value={filters.category ?? ''}
+        defaultValue={filters.category ?? ''}
         onChange={(e) =>
-          onChange({ ...filters, category: e.target.value.trim().toLowerCase() || undefined })
+          onChange({ ...filters, category: normalizeCategory(e.target.value) })
         }
       />
 
       <Input
+        ref={subtypeRef}
         className="h-8 w-32"
         placeholder="Subtype…"
-        value={filters.subtype ?? ''}
+        defaultValue={filters.subtype ?? ''}
         onChange={(e) =>
           onChange({ ...filters, subtype: e.target.value || undefined })
         }
@@ -67,4 +81,10 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
       </Button>
     </div>
   )
+}
+
+function normalizeCategory(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase()
 }
