@@ -11,12 +11,18 @@ interface VesselFiltersProps {
 export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
   // Local state for search so we can debounce without blocking the input
   const [localQ, setLocalQ] = useState(filters.q ?? '')
+  const [localCategory, setLocalCategory] = useState(filters.category ?? '')
+  const didMount = useRef(false)
   const flagRef = useRef<HTMLInputElement>(null)
-  const categoryRef = useRef<HTMLInputElement>(null)
   const subtypeRef = useRef<HTMLInputElement>(null)
 
   // Debounce: fire onChange 300ms after the user stops typing
   useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true
+      return
+    }
+
     const t = setTimeout(() => {
       onChange({
         flag: filters.flag,
@@ -28,10 +34,14 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
     return () => clearTimeout(t)
   }, [localQ, filters.flag, filters.category, filters.subtype, onChange])
 
+  function applyCategory() {
+    onChange({ ...filters, category: normalizeCategory(localCategory) })
+  }
+
   function clear() {
     setLocalQ('')
+    setLocalCategory('')
     if (flagRef.current) flagRef.current.value = ''
-    if (categoryRef.current) categoryRef.current.value = ''
     if (subtypeRef.current) subtypeRef.current.value = ''
     onChange({})
   }
@@ -57,13 +67,17 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
       />
 
       <Input
-        ref={categoryRef}
         className="h-8 w-32"
         placeholder="Category…"
-        defaultValue={filters.category ?? ''}
-        onChange={(e) =>
-          onChange({ ...filters, category: normalizeCategory(e.target.value) })
-        }
+        value={localCategory}
+        onChange={(e) => setLocalCategory(e.target.value)}
+        onBlur={applyCategory}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            applyCategory()
+            e.currentTarget.blur()
+          }
+        }}
       />
 
       <Input
