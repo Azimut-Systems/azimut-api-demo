@@ -1,4 +1,4 @@
-import { getToken, clearToken } from './auth'
+import { getToken, clearToken, logout } from './auth'
 
 export class ApiError extends Error {
   readonly status: number
@@ -28,7 +28,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options,
       headers: { Authorization: `Bearer ${freshToken}`, ...options?.headers },
     })
-    if (!retry.ok) throw new ApiError(retry.status, await retry.json().catch(() => null))
+    if (!retry.ok) {
+      if (retry.status === 401) logout()
+      throw new ApiError(retry.status, await retry.json().catch(() => null))
+    }
     return retry.json()
   }
 

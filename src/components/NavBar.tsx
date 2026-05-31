@@ -1,5 +1,8 @@
-import { NavLink } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { logout } from '../api/auth'
 import { cn } from '../lib/utils'
+import { Button } from './ui/button'
 
 interface NavBarProps {
   orgId?: string
@@ -7,6 +10,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ orgId, showLiveIndicator }: NavBarProps) {
+  const navigate = useNavigate()
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       'text-sm font-medium transition-colors',
@@ -39,6 +43,19 @@ export function NavBar({ orgId, showLiveIndicator }: NavBarProps) {
             Live
           </span>
         )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Log out"
+          title="Log out"
+          onClick={() => {
+            logout()
+            navigate('/login', { replace: true })
+          }}
+        >
+          <LogOut />
+        </Button>
       </div>
     </header>
   )

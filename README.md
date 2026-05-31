@@ -13,27 +13,25 @@ Requirements:
 - Azimut API client ID and client secret
 
 ```bash
-cp .env.example .env
-# Fill in VITE_CLIENT_ID and VITE_CLIENT_SECRET in .env
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite, usually `http://localhost:5173`.
+Open the local URL printed by Vite, usually `http://localhost:5173`, and sign in with your Azimut client ID and API key. Credentials are stored in browser `sessionStorage`, so refreshing the tab keeps you signed in, and closing the tab clears them.
 
 ## Environment variables
 
 | Variable | Description |
 |---|---|
 | `VITE_API_BASE_URL` | API base URL for the Vite proxy. The example env file sets this to `https://api.azimut.ai`. |
-| `VITE_CLIENT_ID` | Azimut OAuth2 client ID. |
-| `VITE_CLIENT_SECRET` | Azimut OAuth2 client secret. |
 
 For normal client use, keep `VITE_API_BASE_URL=https://api.azimut.ai`. Change it only when testing against another Azimut API environment.
 
 ## How the app talks to the API
 
 Browser requests are sent to local `/v1/...` paths. During development, Vite proxies those requests to `VITE_API_BASE_URL`. This avoids browser CORS issues while keeping the API host configurable.
+
+The login page exchanges your client ID and API key for a short-lived bearer token with the OAuth2 client credentials flow. The bearer token is cached in memory and refreshed automatically before expiry.
 
 ## Stack
 

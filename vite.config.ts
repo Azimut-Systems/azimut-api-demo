@@ -23,6 +23,11 @@ export default defineConfig(({ mode }) => {
         '/v1': {
           target: apiTarget,
           changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on('proxyRes', (proxyRes) => {
+              delete proxyRes.headers['www-authenticate']
+            })
+          },
         },
       },
     },

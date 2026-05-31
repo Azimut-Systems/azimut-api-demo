@@ -4,6 +4,7 @@ import { apiClient, ApiError } from './client'
 vi.mock('./auth', () => ({
   getToken: vi.fn().mockResolvedValue('tok_good'),
   clearToken: vi.fn(),
+  logout: vi.fn(),
 }))
 
 import { clearToken } from './auth'

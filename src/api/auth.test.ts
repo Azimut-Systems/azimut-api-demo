@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getToken, clearToken } from './auth'
+import {
+  AuthRequiredError,
+  clearToken,
+  getToken,
+  hasCredentials,
+  login,
+  logout,
+} from './auth'
 
-const MOCK_ENV = {
-  VITE_CLIENT_ID: 'test-id',
-  VITE_CLIENT_SECRET: 'test-secret',
-  VITE_API_BASE_URL: 'https://api.azimut.ai',
+const CREDENTIALS = {
+  clientId: 'test-id',
+  apiKey: 'test-secret',
 }
 
 function mockSuccessfulTokenFetch(expiresIn = 3600) {
@@ -23,53 +29,90 @@ function mockSuccessfulTokenFetch(expiresIn = 3600) {
 }
 
 beforeEach(() => {
-  Object.entries(MOCK_ENV).forEach(([k, v]) => vi.stubEnv(k, v))
+  sessionStorage.clear()
   clearToken()
 })
 
 afterEach(() => {
-  vi.unstubAllEnvs()
   vi.unstubAllGlobals()
+  sessionStorage.clear()
+  clearToken()
+})
+
+describe('login', () => {
+  it('mints a token with runtime credentials and stores them after success', async () => {
+    mockSuccessfulTokenFetch()
+
+    await login(CREDENTIALS)
+
+    expect(hasCredentials()).toBe(true)
+    expect(fetch).toHaveBeenCalledWith(
+      '/v1/oauth/token',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: `Basic ${btoa('test-id:test-secret')}`,
+        }),
+      }),
+    )
+  })
+
+  it('clears credentials when the token endpoint rejects them', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 401 }),
+    )
+
+    await expect(login(CREDENTIALS)).rejects.toThrow('Failed to mint token: 401')
+    expect(hasCredentials()).toBe(false)
+  })
 })
 
 describe('getToken', () => {
-  it('mints a token on first call', async () => {
+  it('requires stored credentials', async () => {
+    await expect(getToken()).rejects.toThrow(AuthRequiredError)
+  })
+
+  it('mints a token on first call after login', async () => {
     mockSuccessfulTokenFetch()
+    await login(CREDENTIALS)
+    clearToken()
+
     const token = await getToken()
+
     expect(token).toBe('tok_abc123')
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 
   it('returns cached token on second call without hitting the network', async () => {
     mockSuccessfulTokenFetch()
+    await login(CREDENTIALS)
     await getToken()
-    await getToken()
+
     expect(fetch).toHaveBeenCalledOnce()
   })
 
   it('deduplicates concurrent inflight requests', async () => {
     mockSuccessfulTokenFetch()
+    await login(CREDENTIALS)
+    clearToken()
+
     const [a, b] = await Promise.all([getToken(), getToken()])
+
     expect(a).toBe('tok_abc123')
     expect(b).toBe('tok_abc123')
-    expect(fetch).toHaveBeenCalledOnce()
-  })
-
-  it('throws when the token endpoint returns non-ok', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 401 }),
-    )
-    await expect(getToken()).rejects.toThrow('Failed to mint token: 401')
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })
 
-describe('clearToken', () => {
-  it('forces a fresh mint on the next call', async () => {
+describe('logout', () => {
+  it('clears session credentials and forces login again', async () => {
     mockSuccessfulTokenFetch()
-    await getToken()
-    clearToken()
-    await getToken()
-    expect(fetch).toHaveBeenCalledTimes(2)
+    await login(CREDENTIALS)
+
+    logout()
+
+    expect(hasCredentials()).toBe(false)
+    await expect(getToken()).rejects.toThrow(AuthRequiredError)
   })
 })

@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { NavBar } from './NavBar'
 
 function wrap(ui: React.ReactElement) {
@@ -27,5 +27,20 @@ describe('NavBar', () => {
   it('does not show live indicator by default', () => {
     wrap(<NavBar />)
     expect(screen.queryByText('Live')).not.toBeInTheDocument()
+  })
+
+  it('navigates to login when logging out', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<NavBar />} />
+          <Route path="/login" element={<div>Login page</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
+
+    expect(screen.getByText('Login page')).toBeInTheDocument()
   })
 })

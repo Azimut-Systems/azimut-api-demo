@@ -1,5 +1,12 @@
 import type { TokenResponse } from '../types/api'
 
+const CREDENTIALS_STORAGE_KEY = 'azimut.credentials'
+
+export interface ClientCredentials {
+  clientId: string
+  apiKey: string
+}
+
 interface TokenState {
   token: string
   expiresAt: number // Unix ms
@@ -7,6 +14,33 @@ interface TokenState {
 
 let state: TokenState | null = null
 let inflightPromise: Promise<string> | null = null
+
+export class AuthRequiredError extends Error {
+  constructor() {
+    super('Azimut client credentials are required')
+    this.name = 'AuthRequiredError'
+  }
+}
+
+export async function login(credentials: ClientCredentials): Promise<void> {
+  clearToken()
+  try {
+    await mintToken(credentials)
+    storeCredentials(credentials)
+  } catch (error) {
+    logout()
+    throw error
+  }
+}
+
+export function logout(): void {
+  clearToken()
+  sessionStorage.removeItem(CREDENTIALS_STORAGE_KEY)
+}
+
+export function hasCredentials(): boolean {
+  return readCredentials() !== null
+}
 
 export async function getToken(): Promise<string> {
   if (state && Date.now() < state.expiresAt) return state.token
@@ -22,16 +56,36 @@ export function clearToken(): void {
   inflightPromise = null
 }
 
-async function mintToken(): Promise<string> {
-  const clientId = import.meta.env.VITE_CLIENT_ID
-  const clientSecret = import.meta.env.VITE_CLIENT_SECRET
+function storeCredentials(credentials: ClientCredentials): void {
+  sessionStorage.setItem(CREDENTIALS_STORAGE_KEY, JSON.stringify(credentials))
+}
+
+function readCredentials(): ClientCredentials | null {
+  const raw = sessionStorage.getItem(CREDENTIALS_STORAGE_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<ClientCredentials>
+    if (!parsed.clientId || !parsed.apiKey) return null
+    return {
+      clientId: parsed.clientId,
+      apiKey: parsed.apiKey,
+    }
+  } catch {
+    return null
+  }
+}
+
+async function mintToken(credentials = readCredentials()): Promise<string> {
+  if (!credentials) throw new AuthRequiredError()
+
   const baseUrl = ''  // requests go to /v1/... and are proxied by Vite (see vite.config.ts)
 
-  const credentials = btoa(`${clientId}:${clientSecret}`)
+  const basicCredentials = btoa(`${credentials.clientId}:${credentials.apiKey}`)
   const res = await fetch(`${baseUrl}/v1/oauth/token`, {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${credentials}`,
+      Authorization: `Basic ${basicCredentials}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: 'grant_type=client_credentials',
