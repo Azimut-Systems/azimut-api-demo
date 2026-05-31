@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from './ui/table'
@@ -26,6 +26,7 @@ export function TransitTable({
   onLoadMore,
 }: TransitTableProps) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,7 +69,7 @@ export function TransitTable({
                     'cursor-pointer hover:bg-muted/50',
                     t.status === 'open' && 'border-l-2 border-l-green-500',
                   )}
-                  onClick={() => navigate(`/transits/${t.id}`)}
+                  onClick={() => navigate(`/transits/${t.id}`, { state: { from: location } })}
                 >
                   <TableCell className="p-2">
                     <TransitThumbnail href={t.evidence.primary_image?.href ?? null} />
@@ -79,6 +80,7 @@ export function TransitTable({
                   >
                     <Link
                       to={`/vessels/${t.vessel.aid}`}
+                      state={{ from: location }}
                       className="flex px-4 py-3 hover:underline"
                     >
                       <VesselChip vessel={t.vessel} />

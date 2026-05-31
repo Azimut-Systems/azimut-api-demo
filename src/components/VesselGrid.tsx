@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Skeleton } from './ui/skeleton'
 import { useVesselThumbnail } from '../hooks/useVesselThumbnail'
@@ -65,6 +65,7 @@ export function VesselGrid({
 }
 
 function VesselCard({ vessel }: { vessel: Vessel }) {
+  const location = useLocation()
   const { data: thumbnailHref } = useVesselThumbnail(vessel.aid)
 
   const meta = [
@@ -80,6 +81,7 @@ function VesselCard({ vessel }: { vessel: Vessel }) {
   return (
     <Link
       to={`/vessels/${vessel.aid}`}
+      state={{ from: location }}
       className={`group block rounded-xl border bg-card overflow-hidden transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5 ${isSparse ? 'opacity-50' : ''}`}
     >
       {/* Thumbnail */}

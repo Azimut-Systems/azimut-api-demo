@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from './ui/table'
@@ -23,6 +23,7 @@ export function VesselTable({
   onLoadMore,
 }: VesselTableProps) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   return (
     <div className="flex flex-col gap-4">
@@ -62,7 +63,7 @@ export function VesselTable({
                 <TableRow
                   key={v.aid}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/vessels/${v.aid}`)}
+                  onClick={() => navigate(`/vessels/${v.aid}`, { state: { from: location } })}
                 >
                   <TableCell>
                     <VesselChip vessel={v} />

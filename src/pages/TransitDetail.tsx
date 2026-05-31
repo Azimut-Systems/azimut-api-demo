@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useLocation, useParams, Link, type Location } from 'react-router-dom'
 import { useTransit } from '../hooks/useTransit'
 import { useTransitSightings } from '../hooks/useTransitSightings'
 import { AnomalyBadge } from '../components/AnomalyBadge'
@@ -11,6 +11,8 @@ import type { Sighting } from '../types/api'
 
 export function TransitDetail() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
+  const backTo = getBackTo(location, '/')
   const { data: transitEnvelope, isLoading: transitLoading, error } = useTransit(id!)
   const { data: sightingsEnvelope, isLoading: sightingsLoading } = useTransitSightings(id!)
 
@@ -18,7 +20,7 @@ export function TransitDetail() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
         <p>Transit not found.</p>
-        <Link to="/" className="text-sm underline">← Back to feed</Link>
+        <Link to={backTo} className="text-sm underline">← Back to feed</Link>
       </div>
     )
   }
@@ -29,7 +31,7 @@ export function TransitDetail() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="flex items-center gap-4 px-6 py-4 border-b bg-background">
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link to={backTo} className="text-sm text-muted-foreground hover:text-foreground">
           ← Feed
         </Link>
         <h1 className="text-lg font-semibold tracking-tight">
@@ -38,6 +40,7 @@ export function TransitDetail() {
           ) : transit ? (
             <Link
               to={`/vessels/${transit.vessel.aid}`}
+              state={{ from: location }}
               className="hover:underline"
             >
               {transit.vessel.name ?? id}
@@ -176,6 +179,12 @@ export function TransitDetail() {
       </main>
     </div>
   )
+}
+
+function getBackTo(location: Location, fallback: string) {
+  const state = location.state as { from?: Location } | null
+  const from = state?.from
+  return from ? `${from.pathname}${from.search}${from.hash}` : fallback
 }
 
 function SightingCard({ sighting }: { sighting: Sighting }) {

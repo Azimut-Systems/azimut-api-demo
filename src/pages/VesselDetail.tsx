@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useLocation, useParams, Link, type Location } from 'react-router-dom'
 import { useVessel } from '../hooks/useVessel'
 import { useVesselTransits } from '../hooks/useVesselTransits'
 import { TransitTimeline } from '../components/TransitTimeline'
@@ -8,6 +8,8 @@ import { formatDatetime } from '../lib/formatDatetime'
 
 export function VesselDetail() {
   const { aid } = useParams<{ aid: string }>()
+  const location = useLocation()
+  const backTo = getBackTo(location, '/vessels')
   const { data: vesselEnvelope, isLoading: vesselLoading, error } = useVessel(aid!)
 
   const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([undefined])
@@ -48,7 +50,7 @@ export function VesselDetail() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
         <p>Vessel not found.</p>
-        <Link to="/vessels" className="text-sm underline">← Back to vessels</Link>
+        <Link to={backTo} className="text-sm underline">← Back to vessels</Link>
       </div>
     )
   }
@@ -57,7 +59,7 @@ export function VesselDetail() {
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
       <header className="flex items-center gap-4 px-6 py-4 border-b bg-background shrink-0">
-        <Link to="/vessels" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link to={backTo} className="text-sm text-muted-foreground hover:text-foreground">
           ← Vessels
         </Link>
         <h1 className="text-lg font-semibold tracking-tight">
@@ -143,6 +145,12 @@ export function VesselDetail() {
       </main>
     </div>
   )
+}
+
+function getBackTo(location: Location, fallback: string) {
+  const state = location.state as { from?: Location } | null
+  const from = state?.from
+  return from ? `${from.pathname}${from.search}${from.hash}` : fallback
 }
 
 function StatItem({
