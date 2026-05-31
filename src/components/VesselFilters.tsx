@@ -12,11 +12,6 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
   // Local state for search so we can debounce without blocking the input
   const [localQ, setLocalQ] = useState(filters.q ?? '')
 
-  // Sync localQ when parent clears filters (e.g. clear button)
-  useEffect(() => {
-    setLocalQ(filters.q ?? '')
-  }, [filters.q])
-
   // Debounce: fire onChange 300ms after the user stops typing
   useEffect(() => {
     const t = setTimeout(() => {
@@ -54,7 +49,7 @@ export function VesselFilters({ filters, onChange }: VesselFiltersProps) {
         placeholder="Category…"
         value={filters.category ?? ''}
         onChange={(e) =>
-          onChange({ ...filters, category: e.target.value || undefined })
+          onChange({ ...filters, category: e.target.value.trim().toLowerCase() || undefined })
         }
       />
 
